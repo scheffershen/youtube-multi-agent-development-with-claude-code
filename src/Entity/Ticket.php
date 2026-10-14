@@ -118,7 +118,7 @@ class Ticket
             'status' => $this->status,
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'dueAt' => $this->dueAt?->format(DATE_ATOM),
-            'assignee' => null,
+            'assignee' => null === $this->assignee ? null : ['id' => $this->assignee->getId(), 'name' => $this->assignee->getName()],
         ];
     }
 }

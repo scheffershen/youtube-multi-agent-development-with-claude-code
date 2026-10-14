@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Dto\AssignTicketRequest;
 use App\Entity\Ticket;
+use App\Repository\AgentRepository;
 use App\Repository\TicketRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -12,13 +14,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/api/tickets')]
 final class TicketController extends AbstractController
 {
     public function __construct(
         private readonly TicketRepository $tickets,
+        private readonly AgentRepository $agents,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
     ) {
@@ -80,6 +85,36 @@ final class TicketController extends AbstractController
         $this->em->flush();
 
         $this->logger->info('Ticket status changed', ['id' => $id, 'status' => $status]);
+
+        return $this->json($ticket->toArray());
+    }
+
+    #[Route('/{id}/assignee', name: 'ticket_assignee', requirements: ['id' => '\d+'], methods: ['PATCH'])]
+    public function assign(
+        int $id,
+        #[MapRequestPayload(acceptFormat: 'json', serializationContext: [AbstractNormalizer::REQUIRE_ALL_PROPERTIES => true])]
+        AssignTicketRequest $payload,
+    ): JsonResponse {
+        $ticket = $this->tickets->find($id);
+        if (null === $ticket) {
+            return $this->json(['error' => 'Ticket not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $agent = null;
+        if (null !== $payload->agentId) {
+            $agent = $this->agents->find($payload->agentId);
+            if (null === $agent) {
+                return $this->json(['error' => 'Agent not found'], Response::HTTP_NOT_FOUND);
+            }
+            if (!$agent->isActive()) {
+                return $this->json(['errors' => ['agentId' => 'Agent is not active.']], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+        }
+
+        $ticket->setAssignee($agent);
+        $this->em->flush();
+
+        $this->logger->info('Ticket assignee changed', ['id' => $id, 'assignee' => $payload->agentId]);
 
         return $this->json($ticket->toArray());
     }

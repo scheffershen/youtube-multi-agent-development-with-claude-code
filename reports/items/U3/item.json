@@ -1,0 +1,1 @@
+{"id": "U3", "kind": "feature", "title": "PATCH /api/tickets/{id}/assignee: assign, unassign, assignee object in all ticket JSON", "evidence": ["URS-F-02.2", "URS-F-02.3", "URS-F-02.4"], "constraints": ["URS-N-01", "URS-N-02", "URS-N-03"], "depends_on": ["F0"], "priority": 4, "spec": "specs/U3-ticket-assignee.md"}
