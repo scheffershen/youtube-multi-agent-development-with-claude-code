@@ -33,9 +33,38 @@ schema in PHP). Avoid `doctrine:schema:drop --force`: the permission classifier 
   `specs/templates/foundation.md` is the skeleton for a URS foundation item.
 - `docs/urs/` requirements documents. `/build <path>` turns one into a module.
 - `reports/round-N.md` one report per improvement round, written by the orchestrator.
-- `.claude/agents/` the six roles. `.claude/skills/improve/` the maintenance loop,
-  `.claude/skills/build/` the URS build loop (same inner steps, sequential items).
+- `.claude/agents/` the ten roles: six for the code loop (log-analyst, urs-decomposer,
+  spec-writer, developer, tester, verifier) and four for publication (doc-writer,
+  changelog-writer, flash-info-writer, validation-recorder).
+  `.claude/skills/improve/` the maintenance loop, `.claude/skills/build/` the URS build
+  loop (same inner steps, sequential items), `.claude/skills/release/` the release cut.
+- `docs/user/` end-user documentation (Docusaurus layout mirroring medica-source).
+- `release/unreleased/` changelog fragments awaiting a release.
+- `reports/items/<id>/` the evidence store: every agent's structured output per item.
   `.claude/workflows/improve.js` the same loop as a deterministic Workflow script.
+
+## Documentation map
+
+The documentation agents (doc-writer, changelog-writer, flash-info-writer,
+validation-recorder) read every path and convention from this table. To port the roles
+to another project, change this table, not the roles.
+
+| Key | Value |
+|-----|-------|
+| product | TicketFlow |
+| language | fr (vouvoiement, present tense) |
+| user_pages | `docs/user/` (Docusaurus; frontmatter `sidebar_position`, `id`, `title`) |
+| changelog | `docs/user/annexe/change-log/change-log.md` (newest version block first, under `## Historique des versions de l'application`) |
+| flash_info_dir | `docs/user/annexe/flash-info/`, file `flash-info-<yyyy-mm>-v<version without dots>.md` |
+| validation_dir | `docs/user/annexe/preuves-validation/`, file `dossier-preuves-validation-<version>.md`, id with dashes |
+| fragments | `release/unreleased/` (one `<item-id>.md` per shipped item) |
+| evidence | `reports/items/<item-id>/` (`item.json`, `developer.md`, `tester.md`, `verdict-<n>.json`, `doc-writer.md`, `changelog-writer.md`) |
+| date_format | `14 octobre 2026` in headings |
+
+For medica-source the same table reads: user_pages `documentation/docs/`, changelog
+`documentation/docs/Annexe/change-log/change-log.md`, flash_info_dir
+`documentation/docs/Annexe/flash-info/`, validation_dir
+`documentation/docs/Annexe/preuves-validation/`.
 
 ## The improvement loop
 

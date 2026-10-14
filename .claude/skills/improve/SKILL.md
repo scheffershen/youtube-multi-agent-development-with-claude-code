@@ -46,6 +46,10 @@ In the **same message**, spawn:
 Use `run_in_background: true` for both, then wait for both notifications. Record the two
 agent IDs: you will message them in later rounds instead of spawning fresh ones.
 
+When each reports, save the block verbatim to `reports/items/<item id>/developer.md` and
+`reports/items/<item id>/tester.md`. This folder is the **evidence store**: the
+documentation agents in step 2f read from it and never from your memory.
+
 Ownership of `tests/` is split, and you must say so in both prompts: the developer owns
 only shared test infrastructure the spec names explicitly (for example a new
 `tests/Api/ApiTestCase.php`); the tester owns every test class, including structural
@@ -55,7 +59,9 @@ forget this, the verifier will fail the item on a criterion nobody was assigned.
 ### 2c. Verify
 
 Spawn `verifier` with only: "Verify `<spec path>`." Do not forward the developer's report.
-Parse the verdict JSON.
+Parse the verdict JSON and save it verbatim to `reports/items/<item id>/verdict-<n>.json`
+where `<n>` is the verifier round (1 for the first). Also write
+`reports/items/<item id>/item.json` with the backlog item once, on the first round.
 
 ### 2d. Fix loop
 
@@ -81,6 +87,24 @@ On PASS:
   trailer.
 - If the item cited a file in `requests/`, move that file to `requests/done/` and append
   a line `Resolved in round N, commit <sha>` to it. Commit that too.
+
+### 2f. Publish
+
+Only after the PASS commit. In the **same message** spawn, both in the background:
+
+- `doc-writer` with: "Document `<spec path>` (item `<id>`, verdict in
+  `reports/items/<id>/`)."
+- `changelog-writer` with: "Write the fragment for `<spec path>` (item `<id>`, commit
+  `<sha>`)."
+
+Neither receives the developer's report. Wait for both, save their blocks to
+`reports/items/<id>/doc-writer.md` and `changelog-writer.md`, then commit everything
+under the documentation paths and `release/unreleased/` as `docs: <id>`. If the
+doc-writer reports `NOT DOCUMENTED` criteria without a reason that matches the verdict,
+send it one message asking why; do not edit the page yourself.
+
+Flash info and the validation dossier are **not** written per item. They are written
+per release by `/release`, from the fragments and the evidence store.
 
 ## Step 3: Report
 

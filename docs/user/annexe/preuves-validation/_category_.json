@@ -1,0 +1,8 @@
+{
+  "label": "Preuves de Validation",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Vérifications fonctionnelles et techniques par version, à titre de preuves complémentaires"
+  }
+}

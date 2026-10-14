@@ -1,0 +1,12 @@
+{
+  "spec": "specs/F0-sla-foundation.md",
+  "verdict": "PASS",
+  "suite": "OK (18 tests, 160 assertions)",
+  "failures": [],
+  "remaining_criticals_out_of_scope": [
+    "TicketStats.php:29 DivisionByZeroError (pre-existing)",
+    "TicketController.php:40 Undefined array key priority (pre-existing)",
+    "TicketController.php:54 toArray() on null (pre-existing)"
+  ],
+  "notes": "Coverage: AC1 testAc1MigrateKeepsExistingDevRows + testAc1MigrateRunsBothMigrationsOnEmptyDatabase (subprocess migrations on temp SQLite files); AC2 testAc2EntitiesRoundTripThroughPersistence; AC3 TicketApiTest three methods, bodies unchanged character for character; AC4 testAc4...; AC5 testAc5... (reflection); AC6/AC7 testAc6UrsF0101/testAc7UrsF0101; AC8 testAc8UrsF0201; AC9/AC10 testAc9UrsF0301/testAc10UrsF0301; AC11 testAc11UrsF0302; AC12 testAc12UrsF0303; AC13 testAc13UrsF0304; AC14/AC15 testAc14UrsN03/testAc15UrsN03. Traffic replay appended 67 lines with 3 CRITICALs, all pre-existing and out of scope. Both migrations re-run on a fresh SQLite file: OK. Diff confined to Ticket.php, new Agent.php, AgentRepository.php, migration Version20261014133137. Style: Agent could use constructor property promotion; cosmetic."
+}
