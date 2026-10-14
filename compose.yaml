@@ -20,7 +20,9 @@ services:
       APP_ENV: dev
       DATABASE_URL: "sqlite:////app/var/db/data_dev.db"
     healthcheck:
-      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1:8000/api/stats') === false ? 1 : 0);"]
-      interval: 10s
+      # A TCP probe only: an HTTP probe would write a request block into the shared
+      # var/log/dev.log every interval and pollute what the agents read.
+      test: ["CMD", "php", "-r", "$s = @fsockopen('127.0.0.1', 8000, $e, $m, 2); exit($s ? 0 : 1);"]
+      interval: 30s
       timeout: 5s
-      retries: 6
+      retries: 3
