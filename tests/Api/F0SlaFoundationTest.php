@@ -204,17 +204,17 @@ final class F0SlaFoundationTest extends ApiTestCase
     }
 
     /**
-     * AC11 (URS-F-03.2): unknown priorities fall back to the normal 24 h target, through
-     * the API and through Ticket::slaTargetHours().
+     * AC11 (URS-F-03.2): urgent has its own 2 h target since R2 (D1): POST urgent is a 201
+     * with dueAt = createdAt + 7200 s; strings outside the known values still fall back to
+     * the normal 24 h target through Ticket::slaTargetHours().
      */
     public function testAc11UrsF0302UnknownPriorityFallsBackToNormalTarget(): void
     {
         $this->postJson('/api/tickets', ['title' => 'Urgent one', 'description' => 'd', 'priority' => 'urgent']);
-        self::assertResponseStatusCodeSame(422);
-        self::assertIsString($this->body()['errors']['priority'] ?? null);
-        self::assertNotSame('', $this->body()['errors']['priority']);
+        self::assertResponseStatusCodeSame(201);
+        self::assertSame(7200, $this->dueMinusCreatedSeconds($this->body()));
 
-        self::assertSame(24, Ticket::slaTargetHours('urgent'));
+        self::assertSame(2, Ticket::slaTargetHours('urgent'));
         self::assertSame(24, Ticket::slaTargetHours(''));
         self::assertSame(24, Ticket::slaTargetHours('LOW'));
     }

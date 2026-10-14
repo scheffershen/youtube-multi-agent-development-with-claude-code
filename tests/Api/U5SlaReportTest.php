@@ -16,7 +16,7 @@ use App\Service\SlaReport;
  */
 final class U5SlaReportTest extends ApiTestCase
 {
-    private const array KNOWN_PRIORITIES = ['low', 'normal', 'high'];
+    private const array KNOWN_PRIORITIES = ['low', 'normal', 'high', 'urgent'];
     private const array ENVELOPE_KEYS = ['generatedAt', 'priorities'];
     private const array ENTRY_KEYS = ['priority', 'total', 'breached', 'breach_rate'];
     private const array TICKET_KEYS = ['id', 'title', 'description', 'priority', 'status', 'createdAt', 'dueAt', 'assignee'];
@@ -59,7 +59,8 @@ final class U5SlaReportTest extends ApiTestCase
         self::assertSame($breachRate, $entry['breach_rate'], $message.' breach_rate');
     }
 
-    public function testAc1UrsF0503EmptyTableReturns200WithThreeZeroEntries(): void
+    /** Amended by R2 (D3): the empty report now has four zero entries, urgent fourth (D2). */
+    public function testAc1UrsF0503EmptyTableReturns200WithFourZeroEntries(): void
     {
         $this->client->request('GET', '/api/reports/sla');
         self::assertResponseStatusCodeSame(200);
@@ -69,7 +70,7 @@ final class U5SlaReportTest extends ApiTestCase
         self::assertSame(self::ENVELOPE_KEYS, array_keys($body));
         self::assertNotFalse(\DateTimeImmutable::createFromFormat(\DATE_ATOM, $body['generatedAt']), 'generatedAt must be DATE_ATOM');
 
-        self::assertCount(3, $body['priorities']);
+        self::assertCount(4, $body['priorities']);
         self::assertSame(self::KNOWN_PRIORITIES, array_column($body['priorities'], 'priority'));
         foreach ($body['priorities'] as $entry) {
             self::assertSame(self::ENTRY_KEYS, array_keys($entry), $entry['priority'] ?? '?');
@@ -80,6 +81,7 @@ final class U5SlaReportTest extends ApiTestCase
         }
     }
 
+    /** Amended by R2 (D3): the exact row list gains the zero urgent row after high (D2). */
     public function testAc2UrsF0501TotalsBreachedAndRatesAreComputedPerPriority(): void
     {
         $this->createTicket(title: 'Low breached', priority: 'low', status: 'open', createdAt: $this->at('-3 hours'), dueAt: $this->at('-1 hour'));
@@ -97,6 +99,7 @@ final class U5SlaReportTest extends ApiTestCase
             ['priority' => 'low', 'total' => 2, 'breached' => 1, 'breach_rate' => 50.0],
             ['priority' => 'normal', 'total' => 3, 'breached' => 1, 'breach_rate' => 33.3],
             ['priority' => 'high', 'total' => 1, 'breached' => 1, 'breach_rate' => 100.0],
+            ['priority' => 'urgent', 'total' => 0, 'breached' => 0, 'breach_rate' => 0.0],
         ], $body['priorities']);
         self::assertSame(6, array_sum(array_column($body['priorities'], 'total')));
     }
@@ -121,6 +124,7 @@ final class U5SlaReportTest extends ApiTestCase
         self::assertEntryValues(self::entry($priorities, 'high'), 1, 0, 0.0, 'high');
     }
 
+    /** Amended by R2 (D3): four known rows (urgent fourth, D2), still no other entry. */
     public function testAc4UrsF0502KnownPriorityWithNoTicketIsListedWithZeroRateAndNoOtherEntry(): void
     {
         $this->createTicket(title: 'High breached', priority: 'high', status: 'open', dueAt: $this->at('-1 hour'));
@@ -129,7 +133,7 @@ final class U5SlaReportTest extends ApiTestCase
         self::assertResponseStatusCodeSame(200);
         $priorities = $this->body()['priorities'];
 
-        self::assertCount(3, $priorities);
+        self::assertCount(4, $priorities);
         self::assertSame(['priority' => 'low', 'total' => 0, 'breached' => 0, 'breach_rate' => 0.0], $priorities[0]);
         self::assertSame(['priority' => 'normal', 'total' => 0, 'breached' => 0, 'breach_rate' => 0.0], $priorities[1]);
         self::assertSame(['priority' => 'high', 'total' => 1, 'breached' => 1, 'breach_rate' => 100.0], $priorities[2]);
@@ -161,8 +165,8 @@ final class U5SlaReportTest extends ApiTestCase
 
     public function testAc6UnknownPrioritiesAreAggregatedUnderTrailingOtherEntry(): void
     {
-        $this->createTicket(title: 'Urgent breached', priority: 'urgent', status: 'open', createdAt: $this->at('-2 hours'), dueAt: $this->at('-1 hour'));
-        $this->createTicket(title: 'Urgent fine', priority: 'urgent', status: 'open', createdAt: $this->at('-1 hour'), dueAt: $this->at('+1 hour'));
+        $this->createTicket(title: 'Escalated breached', priority: 'escalated', status: 'open', createdAt: $this->at('-2 hours'), dueAt: $this->at('-1 hour'));
+        $this->createTicket(title: 'Escalated fine', priority: 'escalated', status: 'open', createdAt: $this->at('-1 hour'), dueAt: $this->at('+1 hour'));
         $this->createTicket(title: 'Critical closed past due', priority: 'critical', status: 'closed', createdAt: $this->at('-1 hour'), dueAt: $this->at('-1 hour'));
         $this->createTicket(title: 'Normal fine', priority: 'normal', status: 'open', createdAt: $this->at('-1 hour'), dueAt: $this->at('+1 hour'));
 
@@ -170,9 +174,9 @@ final class U5SlaReportTest extends ApiTestCase
         self::assertResponseStatusCodeSame(200);
         $priorities = $this->body()['priorities'];
 
-        self::assertCount(4, $priorities);
-        self::assertSame(['low', 'normal', 'high', 'other'], array_column($priorities, 'priority'));
-        self::assertSame(['priority' => 'other', 'total' => 3, 'breached' => 1, 'breach_rate' => 33.3], $priorities[3]);
+        self::assertCount(5, $priorities);
+        self::assertSame(['low', 'normal', 'high', 'urgent', 'other'], array_column($priorities, 'priority'));
+        self::assertSame(['priority' => 'other', 'total' => 3, 'breached' => 1, 'breach_rate' => 33.3], $priorities[4]);
         self::assertEntryValues($priorities[1], 1, 0, 0.0, 'normal');
         self::assertSame(4, array_sum(array_column($priorities, 'total')));
     }
@@ -240,6 +244,7 @@ final class U5SlaReportTest extends ApiTestCase
         self::assertResponseStatusCodeSame(201);
     }
 
+    /** Amended by R2 (D3): the empty report has four zero entries (urgent fourth, D2). */
     public function testAc10ServiceAndRepositoryCountThroughSharedClockPinnedPredicate(): void
     {
         /** @var TicketRepository $repository */
@@ -247,11 +252,11 @@ final class U5SlaReportTest extends ApiTestCase
         /** @var SlaReport $service */
         $service = static::getContainer()->get(SlaReport::class);
 
-        // Empty table: empty maps, three zero entries.
+        // Empty table: empty maps, four zero entries.
         self::assertSame([], $repository->countByPriority());
         self::assertSame([], $repository->countByPriority(true, new \DateTimeImmutable()));
         $empty = $service->generate()['priorities'];
-        self::assertCount(3, $empty);
+        self::assertCount(4, $empty);
         foreach ($empty as $entry) {
             self::assertSame(0, $entry['total'], $entry['priority']);
         }

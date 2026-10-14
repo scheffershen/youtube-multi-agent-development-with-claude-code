@@ -50,7 +50,7 @@ final class FXUrsNAcceptanceSweepTest extends ApiTestCase
         ['GET', '/api/stats', null],
     ];
 
-    private const array EXPECTED_STATUSES = [200, 201, 201, 422, 422, 200, 200, 404, 200, 422, 200, 200];
+    private const array EXPECTED_STATUSES = [200, 201, 201, 422, 201, 200, 200, 404, 200, 422, 200, 200];
 
     private function contentType(): string
     {
@@ -113,12 +113,13 @@ final class FXUrsNAcceptanceSweepTest extends ApiTestCase
     }
 
     /**
-     * AC2 (URS-N-02): every priority outside low|normal|high (including urgent) is a 422 on
-     * priority; nothing is stored; the priority list is not extended.
+     * AC2 (URS-N-02): every priority outside low|normal|high|urgent is a 422 on priority;
+     * nothing is stored; the priority list is exactly the four values (R2, D1/D2: urgent
+     * is now accepted, so it left the rejected list).
      */
-    public function testAc2UrsN02UnknownPriorityReturns422AndUrgentIsNotAdded(): void
+    public function testAc2UrsN02UnknownPriorityReturns422AndPriorityListIsExact(): void
     {
-        foreach (['urgent', 'High', 'LOW', '', null, 123] as $value) {
+        foreach (['High', 'LOW', '', null, 123] as $value) {
             $label = 'priority='.var_export($value, true);
 
             $this->postJson('/api/tickets', ['title' => 'Payment double charged', 'description' => 'Customer #4411 charged twice.', 'priority' => $value]);
@@ -129,7 +130,7 @@ final class FXUrsNAcceptanceSweepTest extends ApiTestCase
         }
 
         $this->assertTicketCount(0);
-        self::assertSame(['low', 'normal', 'high'], Ticket::PRIORITIES);
+        self::assertSame(['low', 'normal', 'high', 'urgent'], Ticket::PRIORITIES);
     }
 
     /**
@@ -329,7 +330,8 @@ final class FXUrsNAcceptanceSweepTest extends ApiTestCase
 
     /**
      * AC10 (section 6): replaying the standard traffic scenario through the test client yields
-     * exactly the expected status sequence, every response being decodable JSON; no 500.
+     * exactly the expected status sequence (fifth request, priority urgent, is a 201 since R2),
+     * every response being decodable JSON; no 500.
      */
     public function testAc10Section6StandardScenarioReplayProducesNo500(): void
     {
@@ -354,7 +356,7 @@ final class FXUrsNAcceptanceSweepTest extends ApiTestCase
 
     /**
      * AC11 (section 6): the app:simulate-traffic --reset console command exits 0 and reports
-     * no 5xx, three 422s and one 404.
+     * no 5xx, three 201s, two 422s and one 404 (urgent is accepted since R2).
      */
     public function testAc11Section6ConsoleCommandReportsNo500(): void
     {
@@ -369,7 +371,8 @@ final class FXUrsNAcceptanceSweepTest extends ApiTestCase
         self::assertSame(0, $tester->getStatusCode(), $display);
         self::assertDoesNotMatchRegularExpression('/-> 5\d\d$/m', $display);
         self::assertDoesNotMatchRegularExpression('/^HTTP 5\d\d:/m', $display);
-        self::assertMatchesRegularExpression('/^HTTP 422: 3$/m', $display);
+        self::assertMatchesRegularExpression('/^HTTP 201: 3$/m', $display);
+        self::assertMatchesRegularExpression('/^HTTP 422: 2$/m', $display);
         self::assertMatchesRegularExpression('/^HTTP 404: 1$/m', $display);
     }
 

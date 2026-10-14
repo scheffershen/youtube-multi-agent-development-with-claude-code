@@ -11,9 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'ticket')]
 class Ticket
 {
-    public const array PRIORITIES = ['low', 'normal', 'high'];
+    public const array PRIORITIES = ['low', 'normal', 'high', 'urgent'];
     public const array STATUSES = ['open', 'in_progress', 'closed'];
-    public const array SLA_TARGET_HOURS = ['low' => 72, 'normal' => 24, 'high' => 8];
+    public const array SLA_TARGET_HOURS = ['low' => 72, 'normal' => 24, 'high' => 8, 'urgent' => 2];
     public const string SLA_DEFAULT_PRIORITY = 'normal';
 
     #[ORM\Id]
