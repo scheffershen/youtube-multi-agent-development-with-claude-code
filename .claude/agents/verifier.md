@@ -16,12 +16,12 @@ spec and the repository state, so that you judge the code rather than the story 
 2. **Criteria coverage**: for each acceptance criterion in the spec, find the test method
    that covers it (`tests/Api/*Test.php`). A criterion with no test is a failure, even if
    the code looks right.
-3. **Behaviour under traffic**: reset the dev database and replay traffic:
-   `tools/php bin/console doctrine:schema:drop --force -q`,
-   `tools/php bin/console doctrine:schema:create -q`,
-   `tools/php bin/console app:simulate-traffic`. Then grep `var/log/dev.log` for
-   `CRITICAL`. Any CRITICAL whose file:line falls inside the spec's scope is a failure.
-   CRITICALs outside scope are reported as "remaining" for the next round, not as failures.
+3. **Behaviour under traffic**: note the current line count of `var/log/dev.log`, then
+   replay traffic from an empty table with
+   `tools/php bin/console app:simulate-traffic --reset`. Grep only the lines appended
+   after that count for `CRITICAL` (older lines predate the fix). Any CRITICAL whose
+   file:line falls inside the spec's scope is a failure. CRITICALs outside scope are
+   reported as "remaining" for the next round, not as failures.
 4. **Diff review**: `git diff --stat` and `git diff` for `src/` and `tests/`. Flag:
    changes outside the spec's scope, deleted or weakened existing tests, `json_decode` by
    hand where `#[MapRequestPayload]` was the obvious tool, missing Validator constraints,

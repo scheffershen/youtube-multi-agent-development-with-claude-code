@@ -61,6 +61,10 @@ Open the `ticketflow` folder as a session in Claude Code Desktop. The app reads
 `CLAUDE.md` (toolchain, layout), `.claude/agents/*.md` (the roles),
 `.claude/skills/improve/SKILL.md` (the loop) and `.claude/settings.json` (permissions).
 
+Roles are registered when the session starts. If you add or rename a file in
+`.claude/agents/` later, start a new session before using it; an existing session will
+answer "agent type not found".
+
 ---
 
 ## 3. Plant the evidence
@@ -314,6 +318,7 @@ What it cannot do, so you do not expect it to:
 | Orchestrator opens source files and starts fixing things itself | the skill's "you do not write code" line was overridden by a strong user prompt | run `/improve` with no extra text; put extra constraints in a request file instead |
 | Item BLOCKED three rounds in a row | spec ambiguity | read the verifier's failure `what` fields across rounds; they will contradict each other; edit the spec |
 | Two developers edited the same file | ran the workflow version without `isolation: 'worktree'` | it is set in `improve.js`; keep it |
+| `Agent type 'developer' not found` | the role file was added after the session started | start a new session on the folder |
 
 ---
 
