@@ -15,4 +15,14 @@ class AgentRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Agent::class);
     }
+
+    /**
+     * Active agents first, then by id ascending within each group.
+     *
+     * @return list<Agent>
+     */
+    public function findActiveFirst(): array
+    {
+        return $this->findBy([], ['active' => 'DESC', 'id' => 'ASC']);
+    }
 }

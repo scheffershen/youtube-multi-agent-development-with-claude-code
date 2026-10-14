@@ -1,0 +1,1 @@
+{"id": "U1", "kind": "feature", "title": "POST /api/agents (create, unique email) and GET /api/agents (list, active first)", "evidence": ["URS-F-01.2", "URS-F-01.3"], "constraints": ["URS-N-02"], "depends_on": ["F0"], "priority": 2, "spec": "specs/U1-agents-create-list.md"}
