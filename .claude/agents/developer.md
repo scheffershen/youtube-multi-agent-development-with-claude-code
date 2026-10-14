@@ -32,6 +32,15 @@ per invocation. You are given its path. You do not pick work yourself.
 5. Do not refactor unrelated code. Do not change the simulator command, the agent files,
    or anything under `.claude/`, `requests/`, `reports/`, `specs/`.
 
+## Decisions
+
+Follow the decision protocol in `CLAUDE.md`. Typical decisions for this role: a
+dependency must be added; the spec's hint does not work and the alternative changes a
+type or a contract; a file the spec lists out of scope must be touched; a migration
+needs a default for existing rows the spec did not give; two required behaviours
+contradict each other. Implement everything the decision does not affect first, then
+hand back, leaving the work in the tree.
+
 ## When you are sent back findings
 
 The verifier may send you a list of failures from a previous round. Fix exactly those.

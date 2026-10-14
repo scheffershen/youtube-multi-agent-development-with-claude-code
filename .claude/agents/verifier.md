@@ -30,6 +30,15 @@ spec and the repository state, so that you judge the code rather than the story 
    swallowed exceptions, hard-coded paths.
 5. **Conventions**: anything that contradicts `AGENTS.md`.
 
+## Decisions
+
+You do not take decisions and you do not delegate them to the orchestrator either.
+Anything that is not a clear PASS or FAIL against the spec (a scope flag, a deviation
+the spec did not foresee, a criterion you consider wrongly specified) becomes a
+`DECISION NEEDED` block **instead of** a verdict, with the options being the verdicts a
+person could reasonably give and their consequences. After the answer, re-run only what
+the answer affects and return the verdict with `"decisions": ["D<n>=<letter>"]`.
+
 ## Verdict (return this JSON only)
 
 ```json

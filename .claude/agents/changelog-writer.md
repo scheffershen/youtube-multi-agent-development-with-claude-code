@@ -45,6 +45,12 @@ commit: <sha>
 `agent`, colonnes `due_at` et `assignee_id`") plus, if the ticket JSON gained keys, a
 `feature` sub-bullet about the new keys.
 
+## Decisions
+
+Follow the decision protocol in `CLAUDE.md`. Typical decisions for this role: the
+section (feature, fix, technical) when an item is both; whether a change counts as an
+API impact; how to phrase a behaviour change that callers may rely on.
+
 ## Rules
 
 - One fragment per item. Sub-bullets are facts from the diff, not restatements of the

@@ -20,15 +20,29 @@ export const meta = {
 // JSON matching a schema. Items run strictly one after another on the shared working
 // tree; developer and tester of one item run in parallel with the tests/ ownership split.
 //
-// Deliberate difference from SKILL.md: there is no chat question. The approval gate is
-// file-based only. First run writes approvals/pending/improve-round-N.md and returns
-// {status: 'waiting_approval'}; the human moves the file to approved/ and runs the
-// workflow again (same args), which resumes from the approved table.
+// Deliberate difference from SKILL.md: there is no chat question. Both gates are
+// file-based only. The backlog gate writes approvals/pending/improve-round-N.md and
+// returns {status: 'waiting_approval'}. A decision handed back by any role (decision
+// protocol in CLAUDE.md) writes approvals/pending/decision-<item>-D<n>.md and returns
+// {status: 'waiting_decision'}. The human fills the file, moves it to approved/, and runs
+// the workflow again with the same args: the baseline reads the answers and every role
+// prompt for that item carries them, so no agent re-decides.
 //
 // args: { maxItems?: number, maxRounds?: number, unattended?: boolean }
 
 const maxItems = (args && args.maxItems) || 2
 const maxRounds = (args && args.maxRounds) || 3
+
+// Any role may hand a choice back instead of its report (decision protocol in CLAUDE.md).
+const DECISION = {
+  type: 'object', required: ['id', 'question', 'options'],
+  properties: {
+    id: { type: 'string' }, question: { type: 'string' }, why: { type: 'string' },
+    options: { type: 'array', items: { type: 'object', required: ['letter', 'option', 'consequence'], properties: { letter: { type: 'string' }, option: { type: 'string' }, consequence: { type: 'string' } } } },
+    recommendation: { type: 'string' }, workSoFar: { type: 'string' },
+  },
+}
+const withDecision = schema => ({ ...schema, properties: { ...schema.properties, decisionNeeded: DECISION } })
 
 const BASELINE = {
   type: 'object', required: ['ok', 'round', 'suite'],
@@ -37,6 +51,8 @@ const BASELINE = {
     tree: { type: 'string' }, reason: { type: 'string' },
     approvedItems: { type: 'array', items: { type: 'object' } },
     pendingApproval: { type: 'boolean' },
+    decisions: { type: 'array', items: { type: 'object', required: ['item', 'id', 'letter'], properties: { item: { type: 'string' }, id: { type: 'string' }, letter: { type: 'string' }, note: { type: 'string' } } } },
+    pendingDecisions: { type: 'array', items: { type: 'string' } },
   },
 }
 const ITEM = {
@@ -76,12 +92,32 @@ const base = await agent(
 4. If approvals/approved/improve-round-<round>.md exists and reports/round-<round>.md does not: parse its table into approvedItems (id, kind, title, evidence, observed, expected, priority; observed/expected may be copied from the title when absent) and set pendingApproval=false.
    Else if approvals/pending/improve-round-<round>.md exists: pendingApproval=true, approvedItems=[].
    Else: pendingApproval=false, approvedItems=[].
+5. decisions = every file approvals/approved/decision-*-D*.md and ratify-*-D*.md whose **Decision:** line is filled: {item, id, letter, note}. pendingDecisions = the paths of decision-*.md files still in approvals/pending/.
 Do not change any file.`,
   { label: 'baseline', schema: BASELINE },
 )
 if (!base || !base.ok) return { status: 'aborted', reason: base ? base.reason : 'no baseline' }
 const roundNo = base.round
 if (base.pendingApproval) return { status: 'waiting_approval', round: roundNo, file: `approvals/pending/improve-round-${roundNo}.md` }
+if (base.pendingDecisions && base.pendingDecisions.length) return { status: 'waiting_decision', round: roundNo, files: base.pendingDecisions }
+const decided = base.decisions || []
+const decisionsFor = item => decided.filter(d => d.item === item)
+const decisionNote = item => {
+  const ds = decisionsFor(item)
+  return ds.length ? `\nDecisions already taken by a person for this item (follow them, do not re-ask): ${ds.map(d => `${d.id}=${d.letter}${d.note ? ' (' + d.note + ')' : ''}`).join('; ')}.` : ''
+}
+// When an agent hands a decision back: write the gate file, log it, stop the run.
+// The person fills **Decision:** and moves the file; the next run resumes with it.
+class WaitingDecision extends Error { constructor(item, file) { super('waiting'); this.item = item; this.file = file } }
+async function gateDecision(item, role, dn) {
+  const file = `approvals/pending/decision-${item}-${dn.id}.md`
+  await agent(
+    `Write ${file} in the decision-file format of approvals/README.md from this block (ROLE ${role}), with **Decision:** left blank; append the line "${dn.id} | ${role} | ${dn.question} | pending | | " to reports/items/${item}/decisions.md; commit both as "gate: decision-${item}-${dn.id}". ${args && args.unattended ? 'Send one push notification naming the file.' : ''}\n${JSON.stringify(dn, null, 2)}\nReturn {"state":"pending","file":"${file}"}.`,
+    { label: `decision:${item}:${dn.id}`, schema: GATE, effort: 'low' },
+  )
+  throw new WaitingDecision(item, file)
+}
+const guarded = async (item, role, call) => { const r = await call(); if (r && r.decisionNeeded) await gateDecision(item, role, r.decisionNeeded); return r }
 
 // ---------------------------------------------------------------- Triage + gate
 let items
@@ -90,7 +126,7 @@ if (base.approvedItems && base.approvedItems.length) {
   log(`Round ${roundNo}: resuming from approved backlog (${items.length} items)`)
 } else {
   phase('Triage')
-  const backlog = await agent(`Produce the backlog for round ${roundNo}.`, { label: 'log-analyst', agentType: 'log-analyst', schema: BACKLOG })
+  const backlog = await guarded(`round-${roundNo}`, 'log-analyst', () => agent(`Produce the backlog for round ${roundNo}.${decisionNote(`round-${roundNo}`)}`, { label: 'log-analyst', agentType: 'log-analyst', schema: withDecision(BACKLOG) }))
   items = (backlog && backlog.items ? backlog.items : []).sort((a, b) => a.priority - b.priority).slice(0, maxItems)
   log(`Triage: ${backlog && backlog.items ? backlog.items.length : 0} candidates, taking ${items.length}`)
   if (!items.length) {
@@ -110,13 +146,14 @@ Return {"state":"pending","file":"approvals/pending/improve-round-${roundNo}.md"
 
 // ---------------------------------------------------------------- Items, strictly sequential
 const results = []
+try {
 for (const item of items) {
   const id = item.id
   phase('Spec')
-  const spec = await agent(
-    `Write the spec for this backlog item:\n${JSON.stringify(item, null, 2)}\nReturn the spec path and the number of acceptance criteria.`,
-    { label: `spec:${id}`, agentType: 'spec-writer', schema: SPEC },
-  )
+  const spec = await guarded(id, 'spec-writer', () => agent(
+    `Write the spec for this backlog item:\n${JSON.stringify(item, null, 2)}${decisionNote(id)}\nReturn the spec path and the number of acceptance criteria.`,
+    { label: `spec:${id}`, agentType: 'spec-writer', schema: withDecision(SPEC) },
+  ))
   if (!spec || spec.criteria < 2) { results.push({ id, status: 'spec_incomplete' }); log(`${id}: spec incomplete, skipped`); continue }
 
   await agent(`Create reports/items/${id}/item.json containing exactly this JSON and nothing else:\n${JSON.stringify({ ...item, spec: spec.path })}\nReturn {"suite":"n/a","green":true,"changedFiles":["reports/items/${id}/item.json"]}.`, { label: `evidence:${id}`, schema: INTEGRATION, effort: 'low' })
@@ -124,9 +161,11 @@ for (const item of items) {
   phase('Build')
   const ownership = 'Ownership of tests/: the developer owns only shared test infrastructure the spec names explicitly; the tester owns every test class, including structural changes to existing ones the spec requires. Both work on the same tree.'
   let [dev, test] = await parallel([
-    () => agent(`Implement \`${spec.path}\`. ${ownership}`, { label: `dev:${id}`, agentType: 'developer', schema: DEV_REPORT }),
-    () => agent(`Write tests for \`${spec.path}\`. ${ownership} Do not read src/.`, { label: `test:${id}`, agentType: 'tester', schema: TEST_REPORT }),
+    () => agent(`Implement \`${spec.path}\`. ${ownership}${decisionNote(id)}`, { label: `dev:${id}`, agentType: 'developer', schema: withDecision(DEV_REPORT) }),
+    () => agent(`Write tests for \`${spec.path}\`. ${ownership} Do not read src/.${decisionNote(id)}`, { label: `test:${id}`, agentType: 'tester', schema: withDecision(TEST_REPORT) }),
   ])
+  if (dev && dev.decisionNeeded) await gateDecision(id, 'developer', dev.decisionNeeded)
+  if (test && test.decisionNeeded) await gateDecision(id, 'tester', test.decisionNeeded)
 
   let verdict = null
   let round = 0
@@ -142,7 +181,7 @@ for (const item of items) {
     )
     log(`${id}: integration ${integ && integ.green ? 'green' : 'red'} (${integ ? integ.suite : 'n/a'})`)
     // Always a fresh verifier; it never sees dev/test reports.
-    verdict = await agent(`Verify \`${spec.path}\`.`, { label: `verify:${id}#${round}`, agentType: 'verifier', schema: VERDICT })
+    verdict = await guarded(id, 'verifier', () => agent(`Verify \`${spec.path}\`.${decisionNote(id)}`, { label: `verify:${id}#${round}`, agentType: 'verifier', schema: withDecision(VERDICT) }))
     await agent(`Write reports/items/${id}/verdict-${round}.json containing exactly this JSON:\n${JSON.stringify(verdict)}\nReturn {"suite":"n/a","green":true,"changedFiles":["reports/items/${id}/verdict-${round}.json"]}.`, { label: `evidence:${id}#${round}`, schema: INTEGRATION, effort: 'low' })
     if (!verdict || verdict.verdict === 'PASS') break
     log(`${id}: FAIL on round ${round} with ${verdict.failures.length} failure(s)`)
@@ -150,9 +189,11 @@ for (const item of items) {
     const toTester = verdict.failures.filter(f => /tests\//.test(f.where))
     const toDev = verdict.failures.filter(f => !/tests\//.test(f.where))
     ;[dev, test] = await parallel([
-      () => toDev.length ? agent(`Spec: \`${spec.path}\`. The verifier found these failures. Fix only these, then re-run the suite:\n${JSON.stringify(toDev, null, 2)}`, { label: `dev-fix:${id}#${round}`, agentType: 'developer', schema: DEV_REPORT }) : Promise.resolve(dev),
-      () => toTester.length ? agent(`Spec: \`${spec.path}\`. The verifier found these problems in the tests. Fix only these:\n${JSON.stringify(toTester, null, 2)}`, { label: `test-fix:${id}#${round}`, agentType: 'tester', schema: TEST_REPORT }) : Promise.resolve(test),
+      () => toDev.length ? agent(`Spec: \`${spec.path}\`. The verifier found these failures. Fix only these, then re-run the suite:\n${JSON.stringify(toDev, null, 2)}${decisionNote(id)}`, { label: `dev-fix:${id}#${round}`, agentType: 'developer', schema: withDecision(DEV_REPORT) }) : Promise.resolve(dev),
+      () => toTester.length ? agent(`Spec: \`${spec.path}\`. The verifier found these problems in the tests. Fix only these:\n${JSON.stringify(toTester, null, 2)}${decisionNote(id)}`, { label: `test-fix:${id}#${round}`, agentType: 'tester', schema: withDecision(TEST_REPORT) }) : Promise.resolve(test),
     ])
+    if (dev && dev.decisionNeeded) await gateDecision(id, 'developer', dev.decisionNeeded)
+    if (test && test.decisionNeeded) await gateDecision(id, 'tester', test.decisionNeeded)
   }
 
   phase('Close')
@@ -168,11 +209,20 @@ for (const item of items) {
   phase('Publish')
   // Serialized after the commit; neither agent receives the developer's report.
   const [doc, frag] = await parallel([
-    () => agent(`Document \`${spec.path}\` (item \`${id}\`, verdict in \`reports/items/${id}/\`).`, { label: `doc:${id}`, agentType: 'doc-writer', schema: DOC_REPORT }),
-    () => agent(`Write the fragment for \`${spec.path}\` (item \`${id}\`, commit \`${close.commit}\`).`, { label: `changelog:${id}`, agentType: 'changelog-writer', schema: FRAG_REPORT }),
+    () => agent(`Document \`${spec.path}\` (item \`${id}\`, verdict in \`reports/items/${id}/\`).${decisionNote(id)}`, { label: `doc:${id}`, agentType: 'doc-writer', schema: withDecision(DOC_REPORT) }),
+    () => agent(`Write the fragment for \`${spec.path}\` (item \`${id}\`, commit \`${close.commit}\`).${decisionNote(id)}`, { label: `changelog:${id}`, agentType: 'changelog-writer', schema: withDecision(FRAG_REPORT) }),
   ])
+  if (doc && doc.decisionNeeded) await gateDecision(id, 'doc-writer', doc.decisionNeeded)
+  if (frag && frag.decisionNeeded) await gateDecision(id, 'changelog-writer', frag.decisionNeeded)
   await agent(`Save these two reports to reports/items/${id}/doc-writer.md and reports/items/${id}/changelog-writer.md, then git add docs release reports/items/${id} and commit "docs: ${id}". Return {"commit":"<sha>","status":"committed"}.`, { label: `publish-commit:${id}`, schema: CLOSE, effort: 'low' })
-  results.push({ id, status: 'committed', commit: close.commit, fixRounds: round - 1, pages: doc ? doc.pages : [], fragment: frag ? frag.fragment : undefined })
+  results.push({ id, status: 'committed', commit: close.commit, fixRounds: round - 1, pages: doc ? doc.pages : [], fragment: frag ? frag.fragment : undefined, decisions: decisionsFor(id).map(d => `${d.id}=${d.letter}`) })
+}
+} catch (e) {
+  if (e instanceof WaitingDecision) {
+    log(`Item ${e.item} is waiting for a human decision: ${e.file}`)
+    return { status: 'waiting_decision', round: roundNo, item: e.item, file: e.file, results }
+  }
+  throw e
 }
 
 // ---------------------------------------------------------------- Report

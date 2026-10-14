@@ -18,6 +18,8 @@ approvals/
 |------|-----------|----------------|
 | `improve-round-N.md` | `/improve` after triage | build these items this round? |
 | `build-<urs-id>.md` | `/build` after decomposition | build this backlog in this order? |
+| `decision-<item>-D<n>.md` | any agent, via the orchestrator, when it hits a choice (protocol in `CLAUDE.md`) | pick A, B, C or write your own |
+| `ratify-<item>-D<n>.md` | the validation recorder or the orchestrator, for a decision that was taken without a person | ratify, or reverse and reopen the item |
 | `blocked-<item>.md` | either loop, after 3 failed fix rounds | fix the spec, drop the item, or raise the cap once? |
 | `release-<version>.md` | `/release` when the dossier is not fully validated | ship with these anomalies, or hold? |
 
@@ -37,6 +39,28 @@ round, and the next round starts by checking `approved/`.
 Enable Remote Control on the session in the Desktop app, then open it from claude.ai on
 the phone: the same chat question appears there. Or, for the file route, move the file
 from any git client and the next round picks it up.
+
+## Format of a decision file
+
+```markdown
+# D<n>: <question>
+
+**Item:** <id>   **Role:** <who asked>   **Date:** <when>
+**Why it is a decision:** <rule from CLAUDE.md>
+
+| Option | Consequence |
+|--------|-------------|
+| A. ... | ... |
+| B. ... | ... |
+
+**Recommendation:** <letter> - <why>
+**Work so far:** <what stays valid whatever the answer>
+**Decision:** <letter> by <name> on <date> (chat|file) - <note>
+```
+
+The same content is appended, one line per decision, to
+`reports/items/<item>/decisions.md`, which the validation dossier lists under
+"Décisions humaines".
 
 ## Format of a request file
 

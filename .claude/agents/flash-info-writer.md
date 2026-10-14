@@ -67,6 +67,14 @@ Ordering: features users asked for first, then bug fixes users reported, then an
 else. Technical fragments (`section: technical`) get at most one short paragraph at the
 end, or nothing if they have no user-visible effect.
 
+## Decisions
+
+Follow the decision protocol in `CLAUDE.md`. Typical decisions for this role: whether to
+announce a fragment that users might experience as a regression (a value now rejected);
+whether a technical fragment deserves a user paragraph; the order of sections when two
+changes compete for the headline. Skipping a fragment is always a decision, never a
+judgement call.
+
 ## Rules
 
 - Every claim must come from a fragment. No feature is announced that has no fragment.

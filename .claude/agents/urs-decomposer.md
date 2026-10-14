@@ -45,6 +45,14 @@ understand.
    endpoint") and `expected` as a quote or tight paraphrase of the requirement with its
    id. The spec-writer needs the requirement text, not your interpretation.
 
+## Decisions
+
+Follow the decision protocol in `CLAUDE.md`. Typical decisions for this role: a
+requirement that can be read two ways; a requirement that conflicts with an open request
+or with existing behaviour; whether a dependency on an item outside the URS should be
+built first or waited for. Do not resolve these in `ignored`; hand them back. Unmapped
+requirements remain the stop condition they already are.
+
 ## Output
 
 Return **only** this JSON:
