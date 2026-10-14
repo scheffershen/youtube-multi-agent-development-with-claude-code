@@ -66,6 +66,14 @@ For medica-source the same table reads: user_pages `documentation/docs/`, change
 `documentation/docs/Annexe/flash-info/`, validation_dir
 `documentation/docs/Annexe/preuves-validation/`.
 
+## Human gates
+
+`approvals/` is the durable human-in-the-loop gate (see its README): backlog approval,
+blocked items, releases not fully validated. Tag, merge, push and deploy are denied in
+`.claude/settings.json` and refused by `.claude/hooks/human-gate.py`; on that message,
+write the request to `approvals/pending/` and stop. Under `/loop` pass `--unattended` so
+gates use push notifications instead of chat questions.
+
 ## The improvement loop
 
 `/improve` runs one round: triage (logs + requests) -> spec -> dev + test in parallel ->

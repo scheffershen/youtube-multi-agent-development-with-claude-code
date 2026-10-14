@@ -9,7 +9,9 @@ decisions between their steps. Keep your own context small: pass file paths, not
 contents, and ask agents for structured output.
 
 Arguments: `$ARGUMENTS` may contain `--max-items N` (default 2) and `--max-rounds N`
-(default 3). `--dry-run` stops after triage and prints the backlog.
+(default 3). `--dry-run` stops after triage and prints the backlog. `--unattended`
+means nobody will answer chat (use it under `/loop` and in routines): every human gate
+then goes through `approvals/` and a push notification instead of a chat question.
 
 ## Step 0: Preconditions
 
@@ -27,6 +29,19 @@ Parse its JSON. Take the top `max-items` items. If the list is empty, write
 `reports/round-N.md` saying so and stop.
 
 If `--dry-run`, print the backlog as a table and stop.
+
+**Human gate: backlog.** Write `approvals/pending/improve-round-N.md` in the format of
+`approvals/README.md` with the selected items. Then:
+
+- Attended: ask the user in chat, one question with options approve / reject / edit,
+  and wait. On approve, move the file to `approvals/approved/`, append
+  `Approved by <user> on <date> (chat)`, commit `gate: improve-round-N approved`, and
+  continue. On reject, move it to `rejected/` with their reason and stop. On edit, they
+  change the table in the file and move it themselves; re-read it from `approved/`.
+- `--unattended`: if `approvals/approved/improve-round-N.md` already exists, use its
+  table and continue. Otherwise send a push notification ("Round N backlog awaits
+  approval: approvals/pending/improve-round-N.md"), write `reports/round-N.md` saying
+  "waiting for approval", and stop. The next round re-checks.
 
 ## Step 2: For each item, in priority order
 
@@ -79,6 +94,11 @@ If still FAIL after `max-rounds`, mark the item BLOCKED, keep the spec and tests
 `git stash` the `src/` changes into a stash named after the spec so the next item starts
 from a clean tree. Note the stash name in the report.
 
+**Human gate: blocked item.** Write `approvals/pending/blocked-<id>.md` with the three
+verdicts' `failures` side by side and the stash name, offering: fix the spec (say what),
+drop the item, or raise the cap once. Attended: ask in chat and act on the answer.
+Unattended: push notification and continue with the next independent item.
+
 ### 2e. Close the item
 
 On PASS:
@@ -128,5 +148,8 @@ Then print the table to the user, and nothing else. Do not paste agent transcrip
 - Never let the developer see the verifier's expectations before the verifier runs, and
   never let the verifier see the developer's report. That separation is the point.
 - Never raise `max-rounds` on your own. Oscillation is a signal for a human.
+- Never run `git tag`, `git merge`, `git push` or a deployment. They are denied and a
+  hook refuses them with a message; if you see that message, write the request to
+  `approvals/pending/` and stop. Do not retry.
 - If any agent returns prose instead of the structured block its definition demands,
   send it one message: "Return only the structured block." Do not parse the prose.
