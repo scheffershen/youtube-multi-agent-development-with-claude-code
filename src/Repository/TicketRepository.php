@@ -91,4 +91,30 @@ class TicketRepository extends ServiceEntityRepository
     {
         return $this->count(['status' => $status]);
     }
+
+    /**
+     * Ticket count per priority from one grouped query, optionally restricted to breached
+     * (or non-breached) rows through withBreached(), the single breach predicate.
+     *
+     * Priorities absent from the table are absent from the map; an empty table yields [].
+     *
+     * @return array<string, int> priority => count
+     */
+    public function countByPriority(?bool $breached = null, ?\DateTimeImmutable $now = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->select('t.priority AS priority, COUNT(t.id) AS total')
+            ->groupBy('t.priority');
+
+        if (null !== $breached) {
+            $this->withBreached($qb, $breached, $now ?? new \DateTimeImmutable());
+        }
+
+        $map = [];
+        foreach ($qb->getQuery()->getArrayResult() as $row) {
+            $map[$row['priority']] = (int) $row['total'];
+        }
+
+        return $map;
+    }
 }
