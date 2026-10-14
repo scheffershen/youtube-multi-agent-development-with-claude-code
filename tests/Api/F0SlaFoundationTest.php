@@ -210,8 +210,9 @@ final class F0SlaFoundationTest extends ApiTestCase
     public function testAc11UrsF0302UnknownPriorityFallsBackToNormalTarget(): void
     {
         $this->postJson('/api/tickets', ['title' => 'Urgent one', 'description' => 'd', 'priority' => 'urgent']);
-        self::assertResponseStatusCodeSame(201);
-        self::assertSame(86400, $this->dueMinusCreatedSeconds($this->body()));
+        self::assertResponseStatusCodeSame(422);
+        self::assertIsString($this->body()['errors']['priority'] ?? null);
+        self::assertNotSame('', $this->body()['errors']['priority']);
 
         self::assertSame(24, Ticket::slaTargetHours('urgent'));
         self::assertSame(24, Ticket::slaTargetHours(''));

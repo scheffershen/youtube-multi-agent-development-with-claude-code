@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\AssignTicketRequest;
+use App\Dto\CreateTicketRequest;
 use App\Entity\Ticket;
 use App\Repository\AgentRepository;
 use App\Repository\TicketRepository;
@@ -55,11 +56,9 @@ final class TicketController extends AbstractController
     }
 
     #[Route('', name: 'ticket_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    public function create(#[MapRequestPayload(acceptFormat: 'json')] CreateTicketRequest $payload): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
-
-        $ticket = new Ticket($data['title'], $data['description'], $data['priority']);
+        $ticket = new Ticket($payload->title, $payload->description, $payload->priority);
         $this->em->persist($ticket);
         $this->em->flush();
 
@@ -72,6 +71,9 @@ final class TicketController extends AbstractController
     public function show(int $id): JsonResponse
     {
         $ticket = $this->tickets->find($id);
+        if (null === $ticket) {
+            return $this->json(['error' => 'Ticket not found'], Response::HTTP_NOT_FOUND);
+        }
 
         return $this->json($ticket->toArray());
     }
