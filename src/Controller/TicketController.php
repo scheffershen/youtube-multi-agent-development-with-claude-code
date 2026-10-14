@@ -40,7 +40,16 @@ final class TicketController extends AbstractController
             return $this->json(['error' => 'Invalid status', 'allowed' => Ticket::STATUSES], Response::HTTP_BAD_REQUEST);
         }
 
-        $items = array_map(fn (Ticket $t) => $t->toArray(), $this->tickets->findNewestFirst($status));
+        // Same convention as status: exact strings only, read raw so arrays never hit InputBag::get().
+        $rawBreached = $request->query->all()['breached'] ?? null;
+
+        if (null !== $rawBreached && !\in_array($rawBreached, ['true', 'false'], true)) {
+            return $this->json(['error' => 'Invalid breached', 'allowed' => ['true', 'false']], Response::HTTP_BAD_REQUEST);
+        }
+
+        $breached = null === $rawBreached ? null : 'true' === $rawBreached;
+
+        $items = array_map(fn (Ticket $t) => $t->toArray(), $this->tickets->findNewestFirst($status, $breached));
 
         return $this->json(['items' => $items, 'count' => \count($items)]);
     }
