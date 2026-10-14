@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PHP_EXE="${PHP_EXE:-/c/php/php-8.4.5-nts-Win32-vs17-x64/php.exe}"
+export COMPOSER_HOME="$DIR/.composer-home"
+exec "$PHP_EXE" -c "$DIR/php.ini" "$DIR/composer.phar" "$@"

@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tools/php:*)",
+      "Bash(tools\\php.cmd:*)",
+      "Bash(tools/composer:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git stash:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)"
+    ]
+  }
+}
