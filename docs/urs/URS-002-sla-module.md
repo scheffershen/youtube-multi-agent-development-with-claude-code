@@ -113,13 +113,13 @@ replay of the standard scenario produces no HTTP 500.
 
 | Requirement | Specification | Test | Status |
 |-------------|---------------|------|--------|
-| URS-F-01 | F-01.1: specs/F0-sla-foundation.md | tests/Api/F0SlaFoundationTest.php | F-01.1 PASS |
+| URS-F-01 | F-01.1: specs/F0-sla-foundation.md ; F-01.2, F-01.3: specs/U1-agents-create-list.md | tests/Api/F0SlaFoundationTest.php ; tests/Api/U1AgentsCreateListTest.php | F-01.1 PASS ; F-01.2 PASS ; F-01.3 PASS |
 | URS-F-02 | F-02.1: specs/F0-sla-foundation.md | tests/Api/F0SlaFoundationTest.php | F-02.1 PASS |
 | URS-F-03 | specs/F0-sla-foundation.md | tests/Api/F0SlaFoundationTest.php | PASS |
 | URS-F-04 | | | |
 | URS-F-05 | | | |
 | URS-N-01 | | | |
-| URS-N-02 | | | |
+| URS-N-02 | specs/R1-filter-tickets-by-status.md ; specs/U1-agents-create-list.md (partial) | tests/Api/R1FilterTicketsByStatusTest.php ; tests/Api/U1AgentsCreateListTest.php | partial, FX pending |
 | URS-N-03 | specs/F0-sla-foundation.md (partial) | tests/Api/F0SlaFoundationTest.php | partial, FX pending |
 
 The build loop fills this table: the spec-writer records the spec path, the tester the
