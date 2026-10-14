@@ -104,11 +104,62 @@ Si aucun ticket ne correspond, la réponse est `200` avec `{ "items": [], "count
 La valeur est comparée exactement, en respectant la casse : `Open` ou `OPEN` ne sont pas
 reconnus comme `open`, et une valeur vide ou entourée d'espaces est refusée.
 
+### Filtrer par dépassement d'échéance
+
+Vous pouvez restreindre la liste aux tickets dont l'échéance est dépassée, ou au
+contraire aux tickets dont elle ne l'est pas, avec le paramètre de requête `breached` :
+
+`GET /api/tickets?breached=true`
+
+| Paramètre | Type | Obligatoire | Description |
+|-----------|------|-------------|-------------|
+| `breached` | `true` ou `false` | non | `true` ne renvoie que les tickets en dépassement d'échéance ; `false` ne renvoie que les tickets qui ne le sont pas |
+
+Un ticket est en dépassement d'échéance lorsque, au moment où la requête est traitée,
+les trois conditions suivantes sont réunies : son statut n'est pas `closed`, son champ
+`dueAt` n'est pas `null`, et son échéance `dueAt` est strictement antérieure à l'heure
+courante du serveur. Un ticket dont l'échéance tombe exactement à l'heure courante n'est
+pas en dépassement. Un ticket `closed` n'est jamais en dépassement, même s'il a été
+clôturé bien après son échéance ; un ticket sans échéance (`dueAt` à `null`) ne l'est
+jamais non plus, quels que soient son statut et son ancienneté.
+
+Avec `breached=false`, la liste contient donc tous les tickets `closed`, tous les tickets
+sans échéance et tous les tickets dont l'échéance n'est pas encore atteinte. À un instant
+donné, les listes `breached=true` et `breached=false` se complètent exactement : chaque
+ticket de la liste complète figure dans l'une et une seule des deux.
+
+Sans le paramètre, la liste complète est renvoyée, comme auparavant. Avec le paramètre,
+la réponse garde la même forme (`items` et `count`), le même ordre du plus récent au
+plus ancien et les mêmes champs par ticket, sans champ supplémentaire ; `count` est le
+nombre de tickets renvoyés. Si aucun ticket ne correspond, la réponse est `200` avec
+`{ "items": [], "count": 0 }`.
+
+La valeur est comparée exactement, en respectant la casse : seules les chaînes `true` et
+`false` sont acceptées. `True`, `TRUE`, `1`, `0`, `yes`, `no`, une valeur vide ou une
+valeur entourée d'espaces sont refusées.
+
+### Combiner les deux filtres
+
+Les paramètres `status` et `breached` peuvent être utilisés ensemble, dans n'importe quel
+ordre ; les deux conditions s'appliquent alors simultanément, toujours du plus récent au
+plus ancien :
+
+`GET /api/tickets?status=open&breached=true`
+
+ne renvoie que les tickets `open` en dépassement d'échéance. Comme un ticket `closed`
+n'est jamais en dépassement, `GET /api/tickets?status=closed&breached=true` renvoie
+toujours `{ "items": [], "count": 0 }`, tandis que
+`GET /api/tickets?status=closed&breached=false` renvoie tous les tickets `closed`.
+
 ### Erreurs
+
+Toutes les erreurs sont renvoyées en JSON. Le paramètre `status` est contrôlé avant
+`breached` : si les deux valeurs sont invalides, la réponse est celle de `status`.
 
 | Code | Signification |
 |------|---------------|
 | `400` | La valeur de `status` n'est pas dans la liste autorisée (valeur inconnue, vide, casse différente, espaces, ou valeur non scalaire telle que `status[]=open`) ; la réponse JSON contient `"error": "Invalid status"` et la liste des valeurs acceptées dans `allowed` |
+| `400` | La valeur de `breached` n'est ni `true` ni `false` (valeur inconnue telle que `yes` ou `treu`, vide, autre écriture telle que `1`, `0`, `True` ou `TRUE`, espaces, ou valeur non scalaire telle que `breached[]=true`) ; la réponse est exactement `{ "error": "Invalid breached", "allowed": ["true", "false"] }` et la liste n'est pas consultée |
 
 ## Consulter un ticket
 
