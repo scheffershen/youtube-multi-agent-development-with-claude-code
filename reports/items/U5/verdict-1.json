@@ -1,0 +1,3 @@
+{"spec": "specs/U5-sla-report.md", "verdict": "PASS", "suite": "OK (104 tests, 921 assertions)", "failures": [],
+ "remaining_criticals_out_of_scope": ["TicketStats.php:29 DivisionByZeroError", "TicketController.php:62 Undefined array key priority (create)", "TicketController.php:76 toArray() on null (show)"],
+ "notes": "AC1-AC10 each map to one method in tests/Api/U5SlaReportTest.php; URS-F-05.1/05.2/05.3, URS-N-02, URS-N-03 in method names. Traffic: 3 CRITICALs, all pre-existing and outside scope; the simulator does not call /api/reports/sla. Diff: TicketRepository::countByPriority() added; new SlaReport service and invokable SlaReportController; JSON_PRESERVE_ZERO_FRACTION. No input, so no Validator needed."}

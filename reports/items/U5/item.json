@@ -1,0 +1,1 @@
+{"id": "U5", "kind": "feature", "title": "GET /api/reports/sla per-priority totals, breached counts and breach rate", "evidence": ["URS-F-05.1", "URS-F-05.2", "URS-F-05.3"], "constraints": ["URS-N-02"], "depends_on": ["F0", "U4"], "priority": 6, "spec": "specs/U5-sla-report.md"}

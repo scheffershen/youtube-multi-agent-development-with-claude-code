@@ -1,0 +1,1 @@
+{"id": "FX", "kind": "acceptance", "title": "URS-N acceptance sweep: JSON errors with no 500 under the standard traffic, audit log entries, backward compatibility", "evidence": [], "constraints": ["URS-N-01", "URS-N-02", "URS-N-03"], "depends_on": ["F0", "U1", "U2", "U3", "U4", "U5"], "priority": 7, "spec": "specs/FX-urs-n-acceptance-sweep.md"}

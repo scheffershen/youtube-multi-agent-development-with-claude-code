@@ -15,8 +15,9 @@ réponses possibles.
 
 ## Organisation
 
-- **Tickets** : création, consultation, changement de statut.
-- **Statistiques** : vue d'ensemble des tickets par statut.
+- **Tickets** : création, consultation, changement de statut, affectation à un agent.
+- **Agents** : création, liste.
+- **Statistiques** : vue d'ensemble des tickets par statut, rapport SLA par priorité.
 - **Annexe** : journal des versions (changelog), flash infos et dossiers de preuves de
   validation.
 

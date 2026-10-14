@@ -1,5 +1,5 @@
 ---
-sidebar_position: 0
+sidebar_position: 1
 id: flash-info-2026-10-v010
 title: Flash info — v0.1.0
 ---

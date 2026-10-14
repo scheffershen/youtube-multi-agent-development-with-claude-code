@@ -25,8 +25,8 @@ final class TicketStats
             'open' => $open,
             'in_progress' => $inProgress,
             'closed' => $closed,
-            // Percentage of tickets that are closed, rounded to one decimal.
-            'closed_ratio' => round($closed / $total * 100, 1),
+            // Percentage of tickets that are closed, rounded to one decimal; 0 on an empty table.
+            'closed_ratio' => 0 === $total ? 0.0 : round($closed / $total * 100, 1),
         ];
     }
 }

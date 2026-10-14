@@ -113,14 +113,19 @@ replay of the standard scenario produces no HTTP 500.
 
 | Requirement | Specification | Test | Status |
 |-------------|---------------|------|--------|
-| URS-F-01 | | | |
-| URS-F-02 | | | |
-| URS-F-03 | | | |
-| URS-F-04 | | | |
-| URS-F-05 | | | |
-| URS-N-01 | | | |
-| URS-N-02 | | | |
-| URS-N-03 | | | |
+| URS-F-01 | F-01.1: specs/F0-sla-foundation.md ; F-01.2, F-01.3: specs/U1-agents-create-list.md ; F-01.4: specs/U2-agent-active-flag.md | tests/Api/F0SlaFoundationTest.php ; tests/Api/U1AgentsCreateListTest.php ; tests/Api/U2AgentActiveFlagTest.php | F-01.1 PASS ; F-01.2 PASS ; F-01.3 PASS ; F-01.4 PASS |
+| URS-F-02 | F-02.1: specs/F0-sla-foundation.md ; F-02.2..4: specs/U3-ticket-assignee.md | tests/Api/F0SlaFoundationTest.php ; tests/Api/U3TicketAssigneeTest.php | PASS |
+| URS-F-03 | specs/F0-sla-foundation.md | tests/Api/F0SlaFoundationTest.php | PASS |
+| URS-F-04 | specs/U4-breached-filter.md | tests/Api/U4BreachedFilterTest.php | PASS |
+| URS-F-05 | specs/U5-sla-report.md | tests/Api/U5SlaReportTest.php | PASS |
+| URS-N-01 | specs/U2-agent-active-flag.md ; specs/U3-ticket-assignee.md ; specs/FX-urs-n-acceptance-sweep.md | tests/Api/U2AgentActiveFlagTest.php ; tests/Api/U3TicketAssigneeTest.php ; tests/Api/FXUrsNAcceptanceSweepTest.php (AC12) | PASS |
+| URS-N-02 | R1, U1, U2, U3, U4, U5 per item ; specs/FX-urs-n-acceptance-sweep.md (sweep) | per-item test classes ; tests/Api/FXUrsNAcceptanceSweepTest.php | PASS |
+| URS-N-03 | F0, R1, U3, U4, U5 per item ; specs/FX-urs-n-acceptance-sweep.md (sweep) | per-item test classes ; tests/Api/FXUrsNAcceptanceSweepTest.php (AC4, AC9, AC14) | PASS |
 
 The build loop fills this table: the spec-writer records the spec path, the tester the
 test file, the orchestrator the status after the verifier's verdict.
+
+Section 6 acceptance replayed by the orchestrator on 2026-10-14 after item FX:
+`tools/php bin/console app:simulate-traffic --reset` -> HTTP 200: 6, 201: 2, 404: 1,
+422: 3, no 5xx, zero CRITICAL appended; `tools/php vendor/bin/phpunit` -> OK (117 tests,
+1128 assertions).

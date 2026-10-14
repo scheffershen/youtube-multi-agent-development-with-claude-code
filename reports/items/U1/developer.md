@@ -1,0 +1,5 @@
+SPEC: specs/U1-agents-create-list.md
+FILES CHANGED: src/Controller/AgentController.php (new), src/Dto/CreateAgentRequest.php (new), src/EventListener/ApiExceptionListener.php (new), src/Repository/AgentRepository.php (findActiveFirst), composer.json, composer.lock, symfony.lock, config/packages/property_info.yaml (recipe), config/reference.php (recipe)
+SCHEMA CHANGED: no
+TESTS: OK (44 tests, 380 assertions)
+NOTES: Installed symfony/property-access and symfony/property-info: without them FrameworkBundle removes serializer.normalizer.object and every #[MapRequestPayload] POST was a 500; without property-info no type extractor, so wrong types would be coerced instead of 422. This touches composer.json and config/, listed as out of scope by the spec; flagged for the verifier. NotBlank(normalizer: 'trim') for whitespace-only values. ApiExceptionListener converts HttpExceptionInterface under /api/ to JSON ({"errors":{...}} for validation, {"error":...} otherwise); non-HTTP throwables untouched.

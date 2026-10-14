@@ -1,0 +1,1 @@
+{"id": "R1", "kind": "feature", "title": "Filter GET /api/tickets by status query parameter", "evidence": ["requests/001-filter-tickets-by-status.md"], "constraints": ["URS-N-02", "URS-N-03"], "depends_on": ["F0"], "priority": 1, "spec": "specs/R1-filter-tickets-by-status.md"}

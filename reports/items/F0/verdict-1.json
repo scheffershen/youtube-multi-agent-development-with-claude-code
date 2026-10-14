@@ -1,0 +1,25 @@
+{
+  "spec": "specs/F0-sla-foundation.md",
+  "verdict": "FAIL",
+  "suite": "FAIL (18 tests, 159 assertions, 1 failure: F0SlaFoundationTest::testAc5ApiTestCaseShapeAndTicketApiTestExtendsIt)",
+  "failures": [
+    {
+      "criterion": "AC5",
+      "what": "tests/Api/TicketApiTest.php was never moved onto ApiTestCase: it still extends WebTestCase with its own setUp(), postJson(), body(). Required behaviour 5 says those are deleted and the class extends ApiTestCase.",
+      "where": "tests/Api/TicketApiTest.php:16",
+      "fix_hint": "extend ApiTestCase, delete the duplicated members, keep the three test bodies unchanged"
+    },
+    {
+      "criterion": "AC1 / AC3",
+      "what": "testAc1MigrateKeepsExistingDevRows reads the live var/data_dev.db, which app:simulate-traffic --reset rewrites; after the mandated traffic replay the test fails (due_at no longer NULL). Not reliably green.",
+      "where": "tests/Unit/F0SlaFoundationMigrationTest.php:44",
+      "fix_hint": "build the fixture in a temp SQLite file: migrate to Version20261014130059, insert three rows, migrate to latest"
+    }
+  ],
+  "remaining_criticals_out_of_scope": [
+    "TicketStats.php:29 DivisionByZeroError (pre-existing)",
+    "TicketController.php:40 Undefined array key priority (pre-existing)",
+    "TicketController.php:54 toArray() on null (pre-existing)"
+  ],
+  "notes": "Every Evidence URS id (URS-F-01.1, F-02.1, F-03.1..4) and URS-N-03 appear in a test method name and docblock. Code side matches the spec. Migration is the unedited doctrine:migrations:diff output. AC2 uses ApiTestCase (a WebTestCase) rather than a bare KernelTestCase: superset, acceptable."
+}
