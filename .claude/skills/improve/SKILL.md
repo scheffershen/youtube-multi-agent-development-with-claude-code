@@ -46,6 +46,12 @@ In the **same message**, spawn:
 Use `run_in_background: true` for both, then wait for both notifications. Record the two
 agent IDs: you will message them in later rounds instead of spawning fresh ones.
 
+Ownership of `tests/` is split, and you must say so in both prompts: the developer owns
+only shared test infrastructure the spec names explicitly (for example a new
+`tests/Api/ApiTestCase.php`); the tester owns every test class, including structural
+changes to existing ones that the spec requires (moving a class onto a new base). If you
+forget this, the verifier will fail the item on a criterion nobody was assigned.
+
 ### 2c. Verify
 
 Spawn `verifier` with only: "Verify `<spec path>`." Do not forward the developer's report.

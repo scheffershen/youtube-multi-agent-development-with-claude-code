@@ -325,7 +325,83 @@ What it cannot do, so you do not expect it to:
 
 ---
 
-## 10. Troubleshooting
+## 10. Building from a requirements document
+
+Everything so far was maintenance: the loop reacts to what logs and people report. The
+same roles can build forward from a User Requirements Specification, with one new role in
+front and one new orchestrator.
+
+**The input.** `docs/urs/URS-002-sla-module.md` is a sample URS in the style of a
+regulated-industry document: numbered requirements (`URS-F-01.3`), non-functional
+constraints (`URS-N-02`), an explicit out-of-scope list, and an empty traceability table.
+Write yours the same way. The numbering is not ceremony; it is what lets a test method be
+named after the clause it proves.
+
+**The decomposer.** `.claude/agents/urs-decomposer.md` reads the URS and the current
+code and returns a backlog in the same shape the log-analyst produces, so the rest of the
+pipeline does not know or care where an item came from. It adds three things:
+
+- A **foundation item** `F0` first: every new entity, column, relation, migration and the
+  shared test base, with no endpoints. Endpoint items stay small because the schema work
+  is already landed.
+- A `depends_on` list, so the orchestrator builds in order instead of in parallel.
+- Non-functional requirements as `constraints` on the items they govern, plus a final
+  `FX` acceptance sweep that checks the cross-cutting ones over the whole module.
+
+Every URS sub-point must land in exactly one item's evidence. Anything the decomposer
+cannot place goes into `unmapped_requirements`, and the build refuses to start until a
+human resolves it. That refusal is a feature: an unowned requirement in a URS is
+precisely the kind of thing that surfaces six months later as "but the document said".
+
+**The foundation template.** `specs/templates/foundation.md` is what the spec-writer
+fills for `F0`. Read it once. Its five fixed criteria (migration applies on a populated
+and an empty database, round-trip persistence test, existing suite unchanged, JSON keys
+preserved, shared test base exists) are the floor for any schema change, URS or not.
+
+**The orchestrator.** `/build docs/urs/URS-002-sla-module.md` runs the decomposer, then
+steps 2a to 2e of `/improve` for every item in order, on a branch named after the URS.
+Two differences from `/improve` matter. A BLOCKED item stops the whole build, because
+later items depend on it. And after every PASS the orchestrator fills the URS
+traceability table with the spec path, the test file and the status, and commits that as
+its own `trace:` commit. At the end the table in section 7 of the URS is complete and
+every row points at a test you can run.
+
+Try it in order:
+
+```
+/build docs/urs/URS-002-sla-module.md --dry-run
+```
+
+Read the backlog. Check the decomposer noticed that URS-F-04.3 (combine the breach
+filter with a status filter) depends on a status filter that does not exist yet and is
+sitting in `requests/001`. That cross-reference is the kind of thing the decomposer is for.
+
+```
+/build docs/urs/URS-002-sla-module.md --only F0
+```
+
+The foundation item alone. Expect two entities touched, one migration, a new
+`tests/Api/ApiTestCase.php`, and a suite that grows by a dozen tests without any of the
+original three changing. Then run the rest:
+
+```
+/build docs/urs/URS-002-sla-module.md --resume
+```
+
+Budget roughly 300k to 450k output tokens per item across the five roles, so around three
+million for this URS. If that is more than you want to spend unattended, `--only` lets
+you take it an item at a time and read each report.
+
+**Where this stops being automatic.** The decomposer is good at what is written and
+blind to what is not. Authentication, audit retention, concurrency under load and
+anything the URS author considered obvious will not appear in the backlog. Review the
+dry-run output as you would review a junior engineer's work breakdown, once, before the
+tokens are spent. And keep the merge of the build branch as a human action; the
+orchestrator deliberately does not do it.
+
+---
+
+## 11. Troubleshooting
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
@@ -339,7 +415,7 @@ What it cannot do, so you do not expect it to:
 
 ---
 
-## 11. Exercises
+## 12. Exercises
 
 1. Add a request asking for `GET /api/tickets/{id}` to include a `age_in_days` field.
    Run a round. Check that the spec-writer put an exact JSON shape in the criteria.
