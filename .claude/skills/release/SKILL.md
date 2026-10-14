@@ -62,6 +62,14 @@ the block.
 - The dossier's `CONCLUSION` and `ANOMALIES` lines go verbatim into your final report.
   You do not soften them.
 
+## Step 3b: Human gate when not validated
+
+If the dossier's `CONCLUSION` is "non intégralement validée", write
+`approvals/pending/release-<version>.md` with the conclusion paragraph and the anomaly
+table copied verbatim, asking: ship with these anomalies, or hold. Attended: ask in chat;
+on "hold", stop after step 4 without printing "ready to tag". Unattended: push
+notification. Either way the files are committed; only the recommendation changes.
+
 ## Step 4: Archive fragments and commit
 
 Move every fragment from the fragments folder to `release/<version>/`. Commit:
@@ -81,7 +89,8 @@ Next (human): review the dossier; `git tag v<version>`; merge.
 
 ## Rules
 
-- Never tag, never merge, never push.
+- Never tag, never merge, never push. A hook refuses these with a message; if you see
+  it, stop. The human does it after reading the dossier.
 - Never edit the dossier or the flash info yourself. If something is wrong, message the
   agent that wrote it with the specific line.
 - If the dossier says "non intégralement validée", the release still exists as a commit

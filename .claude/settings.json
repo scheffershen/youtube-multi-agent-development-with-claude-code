@@ -7,9 +7,12 @@
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
+      "Bash(git show:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git stash:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git mv:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(cat:*)",
@@ -19,7 +22,23 @@
     "deny": [
       "Bash(rm -rf:*)",
       "Bash(git push:*)",
-      "Bash(git reset --hard:*)"
+      "Bash(git tag:*)",
+      "Bash(git merge:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(gh pr merge:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/human-gate.py"
+          }
+        ]
+      }
     ]
   }
 }

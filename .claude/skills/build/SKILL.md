@@ -26,6 +26,11 @@ Spawn `urs-decomposer` (foreground) with the URS path. Parse its JSON.
 - Print the backlog as a table: id, title, evidence, depends_on. With `--dry-run`, stop
   here.
 - Save the backlog to `reports/build-<urs-id>-backlog.json` so `--resume` can find it.
+- **Human gate: backlog.** Write `approvals/pending/build-<urs-id>.md` with the table
+  and handle it exactly as `/improve` handles `improve-round-N.md` (chat question when
+  attended, push notification and stop when `--unattended`). With `--resume`, an
+  existing `approvals/approved/build-<urs-id>.md` counts as the approval; do not ask
+  again unless the backlog changed.
 
 ## Step 2: Build each item, in order
 
@@ -43,8 +48,8 @@ with these differences:
 - **2b (build).** Unchanged. The developer must not be told what the tester is doing.
 - **2c (verify).** Unchanged, but add to the verifier prompt: "Also confirm every URS id
   in the spec's Evidence line is named in at least one test method's docblock or name."
-- **2d (fix loop).** Unchanged. On BLOCKED, **stop the whole build** and report; later
-  items depend on this one.
+- **2d (fix loop).** Unchanged. On BLOCKED, write `approvals/pending/blocked-<id>.md`
+  as `/improve` does, then **stop the whole build**; later items depend on this one.
 - **2e (close).** After the commit, update the URS traceability table (section 7): fill
   the Specification and Test columns with the paths and Status with `PASS` for every URS
   id in the item's evidence. Commit that with the message `trace: <item id>`.
