@@ -48,6 +48,9 @@ with these differences:
 - **2e (close).** After the commit, update the URS traceability table (section 7): fill
   the Specification and Test columns with the paths and Status with `PASS` for every URS
   id in the item's evidence. Commit that with the message `trace: <item id>`.
+- **2f (publish).** Unchanged: doc-writer and changelog-writer per item. For a
+  `foundation` item the doc-writer usually reports nothing to document except new JSON
+  keys; that is correct.
 
 ## Step 3: Acceptance sweep
 

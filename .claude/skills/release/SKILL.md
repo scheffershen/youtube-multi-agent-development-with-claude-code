@@ -1,0 +1,88 @@
+---
+name: release
+description: Cut a release from the shipped items: merge changelog fragments into a version block, write the flash-info letter, write the validation evidence dossier by replaying the suite and traffic, and commit. Does not tag or merge; that is the human gate. Use when asked to "release", "cut version X", "prepare the flash info", or "write the validation dossier".
+---
+
+You are the **orchestrator** for one release. You assemble; you do not write prose
+yourself except the mechanical changelog merge. Arguments: `$ARGUMENTS` must contain the
+version (`0.2.0`). Options: `--date YYYY-MM-DD` (default today), `--previous X.Y.Z`
+(default: the last `### Version` heading in the changelog), `--skip-dossier`.
+
+Read the **Documentation map** in `CLAUDE.md` first; every path below comes from it.
+
+## Step 0: Preconditions
+
+- Clean tree, green suite (`tools/php vendor/bin/phpunit`).
+- At least one fragment in the fragments folder. None means nothing to release: stop.
+- For every fragment, `reports/items/<item>/verdict-*.json` exists and the latest one is
+  PASS. A fragment without a PASS verdict is removed from the release and reported.
+
+## Step 1: Changelog block (mechanical, you do it)
+
+Read every fragment. Group by `section`: `feature` under **Nouvelles fonctionnalités**,
+`fix` under **Corrections de bugs**, `technical` under **Améliorations techniques**.
+Insert a new block right after the `## Historique des versions` heading:
+
+```markdown
+### Version <version> - <date in the house format, e.g. 14 octobre 2026>
+
+**Nouvelles fonctionnalités**
+
+<feature fragment bodies, verbatim, in item-id order>
+
+**Corrections de bugs**
+
+<fix bodies>
+
+**Améliorations techniques**
+
+<technical bodies>
+```
+
+Omit an empty section. Do not rewrite fragment text. Commit:
+`release: changelog <version>`.
+
+## Step 2: Flash info and dossier, in parallel
+
+In the same message spawn:
+
+- `flash-info-writer` with the version, date and product name. Background.
+- `validation-recorder` with the version, date, previous version, and the commit range
+  `v<previous>..HEAD` (or the first commit if no tag). Background. Skip with
+  `--skip-dossier`.
+
+Wait for both. Each returns a structured block; if either returns prose, ask once for
+the block.
+
+## Step 3: Cross-check (you do it, cheaply)
+
+- Every fragment id appears in the flash-info report's `FRAGMENTS USED` or
+  `FRAGMENTS SKIPPED` with a reason. A missing id means the letter is incomplete: send
+  the writer one message naming the id.
+- The dossier's `CONCLUSION` and `ANOMALIES` lines go verbatim into your final report.
+  You do not soften them.
+
+## Step 4: Archive fragments and commit
+
+Move every fragment from the fragments folder to `release/<version>/`. Commit:
+`release: v<version> flash info and validation dossier`.
+
+## Step 5: Report
+
+Print:
+
+```
+Release <version>
+Changelog: <n> feature, <n> fix, <n> technical
+Flash info: <path>
+Dossier: <path> — <CONCLUSION line> — <ANOMALIES line>
+Next (human): review the dossier; `git tag v<version>`; merge.
+```
+
+## Rules
+
+- Never tag, never merge, never push.
+- Never edit the dossier or the flash info yourself. If something is wrong, message the
+  agent that wrote it with the specific line.
+- If the dossier says "non intégralement validée", the release still exists as a commit
+  and the report says so in the first line. The decision belongs to the human.

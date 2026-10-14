@@ -401,7 +401,73 @@ orchestrator deliberately does not do it.
 
 ---
 
-## 11. Troubleshooting
+## 11. Documentation and validation evidence
+
+Code is not shipped until four documents exist: the end-user page, the changelog entry,
+the flash info sent to users, and the validation dossier a quality reviewer signs. In
+most teams these are written last, from memory, by whoever is left. The loop can write
+them from evidence instead, if it keeps the evidence.
+
+**The evidence store.** Every agent already returns a structured block. From this
+chapter on, the orchestrator saves each block under `reports/items/<item>/`: the backlog
+item, the developer and tester reports, one verdict JSON per verifier round, and later
+the documentation reports. Nothing is written to a document that cannot be pointed back
+to one of those files. This is what makes the dossier defensible: every row of its test
+table names a test method and the replay that ran it.
+
+**Four more roles, two cadences.** Per item, right after the PASS commit, `/improve`
+step 2f spawns two agents in parallel:
+
+- `doc-writer` updates the end-user page that owns the feature. It reads the spec's
+  Required behaviour and the verdict, never the code diff or the developer's report, so
+  it documents what was specified and proven, not what was typed.
+- `changelog-writer` writes one fragment to `release/unreleased/`. It does read the diff,
+  because changelog readers are technical and want the route, the field and the default.
+
+Per release, `/release 0.2.0` runs the other two:
+
+- `flash-info-writer` turns the fragments and the user pages into the letter. It is kept
+  away from specs and code on purpose: if a fact is not in a fragment, it is not
+  announced.
+- `validation-recorder` replays the suite, the traffic scenario and the migrations
+  itself, reads the verdicts and the test files, and writes the dossier. It has the
+  verifier's independence: no narratives, only evidence. Its conclusion is either
+  "validée" or "non intégralement validée", and the orchestrator copies that line into
+  its report without softening it.
+
+Open `.claude/agents/validation-recorder.md` and read the rules at the end. The one that
+matters most: a test that passed in a verdict but fails on the recorder's replay is
+recorded as "Non" and opens an anomaly. The dossier never trusts a stored verdict over a
+fresh run.
+
+**The documentation map.** All four roles read paths, file-name patterns and the
+language from one table in `CLAUDE.md`. The demo's `docs/user/` mirrors the
+medica-source Docusaurus layout (pages at the root, `annexe/change-log`,
+`annexe/flash-info`, `annexe/preuves-validation`) so that porting is a table edit. The
+map in `CLAUDE.md` already lists the medica-source values.
+
+**What a release looks like.** The orchestrator merges fragments into a version block
+of the changelog mechanically, grouped into the three house sections, and commits. Then
+the two release agents run in parallel. Then fragments move to `release/<version>/` for
+the record. The orchestrator never tags and never merges; it prints the dossier's
+conclusion and anomaly count and stops. Whether a version with open anomalies ships is
+a decision the loop is designed not to make.
+
+**A worked example.** On branch `build/urs-002`, item F0 has its evidence store under
+`reports/items/F0/`, a fragment, an updated tickets page, and release 0.2.0 has a flash
+info and a dossier written by these roles. Read the dossier's section 8 first: it lists
+the three pre-existing 500s as anomalies "antérieures à cette version", which is exactly
+right, and the conclusion is not "validée". That is the loop telling you the truth.
+
+**Porting to medica-source.** Three steps. Copy `.claude/agents/` and the three skills.
+Replace the documentation map with the medica-source paths. Seed `reports/items/` for
+the current version by hand, or start the store at the next item; the recorder marks
+anything without a verdict as code review, which is honest about the past rather than
+inventing it.
+
+---
+
+## 12. Troubleshooting
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
@@ -415,7 +481,7 @@ orchestrator deliberately does not do it.
 
 ---
 
-## 12. Exercises
+## 13. Exercises
 
 1. Add a request asking for `GET /api/tickets/{id}` to include a `age_in_days` field.
    Run a round. Check that the spec-writer put an exact JSON shape in the criteria.
