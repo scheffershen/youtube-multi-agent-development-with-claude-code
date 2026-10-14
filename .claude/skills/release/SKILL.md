@@ -83,6 +83,14 @@ notification. Either way the files are committed; only the recommendation change
 Move every fragment from the fragments folder to `release/<version>/`. Commit:
 `release: v<version> flash info and validation dossier`.
 
+## Step 4b: Pre-merge check (you do it, read-only)
+
+Before printing the report, predict the human's merge:
+`git merge-tree --write-tree <target branch> HEAD`. A non-zero exit or any `CONFLICT`
+line means the merge will not be clean; list the conflicting paths in the report with a
+one-line resolution hint each (for example "docs/user/*: take this branch's versions").
+Check the whole tree, never a hand-picked list of files.
+
 ## Step 5: Report
 
 Print:
