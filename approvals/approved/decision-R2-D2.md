@@ -11,3 +11,4 @@
 **Recommendation:** A - the only reading under which "ranked above high" and URS-N-03 hold at once.
 **Work so far:** specs/R2-urgent-priority.md written in full with every order-dependent spot marked [D2]; D1=B cited; four shipped tests to amend listed with line numbers.
 **Decision:**
+A by Yi Shen on 2026-10-14 (chat, Claude Code Desktop) - append after high
