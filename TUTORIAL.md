@@ -234,11 +234,14 @@ Every 30 minutes the session runs another round. Because the log-analyst reads
 `reports/`, it knows what earlier rounds shipped and does not re-pick them. Stop it when
 the report says "nothing to do" twice.
 
-**Deterministic workflow.** `.claude/workflows/improve.js` is the same loop with the
-control flow written in JavaScript instead of prose: the round cap, the failure routing
-and the fresh verifier are code, not instructions the model might reinterpret. Each
-agent is forced to return JSON that matches a schema, so there is no "return only the
-structured block" dance. Run it with:
+**Deterministic workflow.** `.claude/workflows/improve.js` implements the same stages
+as the skill with the control flow in JavaScript: baseline check, triage, the file-based
+approval gate, then per item spec, build, an explicit integration check on the shared
+tree, a fresh verifier per round, close with evidence, and publish. Each agent is forced
+to return JSON that matches a schema. The skill remains the authoritative description of
+the process; the script is the version to run when you want every decision pinned. Its
+one deliberate difference: it never asks a question in chat. The first run writes the
+pending approval file and stops; you move the file and run it again. Run it with:
 
 ```
 use a workflow: run improve with {"maxItems": 2, "maxRounds": 3, "round": 2}
@@ -246,8 +249,9 @@ use a workflow: run improve with {"maxItems": 2, "maxRounds": 3, "round": 2}
 
 Workflows must be asked for explicitly, by saying "use a workflow" or by typing
 `ultracode` in the prompt. They can fan out many agents at once, so the explicit opt-in
-is the cost control. Developers in the workflow version get their own git worktree
-because two items can be in the Build phase at the same time.
+is the cost control. Items run strictly one after another on the shared tree, because
+the verifier must judge the same tree that becomes the commit; developer and tester of
+one item run in parallel with the `tests/` ownership split.
 
 **Scheduled cloud routine.** `/schedule` creates a routine that runs a prompt on a cron
 in the cloud, for a repository that lives on GitHub. The prompt would be `/improve` and
@@ -296,8 +300,14 @@ What the demo does already, and why, so you keep it when you adapt the loop:
   the spec is ambiguous. Raising the cap hides the signal and burns tokens. The skill
   explicitly forbids the orchestrator from raising it on its own.
 - **Permissions.** `.claude/settings.json` allows the wrapper commands, git read and
-  commit, and denies `git push`, `git reset --hard` and `rm -rf`. The loop can commit
-  locally all day and cannot publish or destroy anything. Pushing stays a human action.
+  commit, and denies push, tag, merge, hard reset and `rm -rf`. A hook
+  (`.claude/hooks/human-gate.py`, with its own executable checks) refuses the same
+  commands even when hidden behind git options or chained after other commands. Treat
+  both as tripwires, not as a security boundary: an agent with push credentials can
+  push through a script the hook never sees. The real boundary is that the agents'
+  environment has no push or deploy credentials at all. Likewise, "the tester never
+  reads src/" is a prompt rule; the verifier's criteria-coverage check is what catches
+  a tester that broke it.
 - **Clean-tree precondition.** The verifier's diff review is only meaningful if the diff
   is the agents' work alone.
 - **Reports as memory.** `reports/round-N.md` is how round N+1 knows what happened.

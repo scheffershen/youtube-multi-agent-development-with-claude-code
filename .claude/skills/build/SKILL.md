@@ -35,8 +35,12 @@ Spawn `urs-decomposer` (foreground) with the URS path. Parse its JSON.
 ## Step 2: Build each item, in order
 
 Items are built **sequentially** in the order returned, because each depends on the
-previous ones landing in the tree. Do not parallelise across items. Inside an item,
-developer and tester still run in parallel.
+previous ones landing in the tree. Do not parallelise across items: spec-writing for the
+next item may start early (it only reads), but its developer, tester and verifier start
+only after the previous item's PASS commit. Inside an item, developer and tester still
+run in parallel on the same tree with the `tests/` ownership split stated in both prompts.
+The candidate revision the verifier judges is the working tree at that moment; it becomes
+the item commit on PASS, so the verdict and the commit always describe the same tree.
 
 For each item, run **exactly** steps 2a to 2e of `/improve` (`.claude/skills/improve/SKILL.md`)
 with these differences:
