@@ -191,8 +191,25 @@ What to watch while it runs:
 - `reports/round-1.md` appears at the end with the table, the remaining CRITICALs and
   the requests still open.
 
-Run the simulator again and grep the log. Whatever the round fixed is gone; whatever it
-did not take is still there for round two.
+Run the simulator again with `--reset` and grep the log. Whatever the round fixed is
+gone; whatever it did not take is still there for round two.
+
+**A worked example is checked in.** The branch `demo/round-1-example` contains one item
+(B1, the stats division by zero) pushed through all five roles by hand, with the spec the
+spec-writer wrote, the five tests the tester wrote from that spec alone, the one-line fix
+the developer made, the verifier's PASS, and `reports/round-1.md` with the token cost of
+each role. Diff it against `main` to see exactly what one round produces:
+
+```bash
+git diff main demo/round-1-example --stat
+```
+
+Two things from that run are worth knowing before your own. The verifier hit a
+permission block on a destructive console command and worked around it correctly but
+slowly; the tooling now avoids that command entirely. And the tester's tests were green
+on their first run because the developer had finished seconds earlier, so "written to
+fail first" is a tendency, not a guarantee. The verifier's criteria-coverage check is the
+real safeguard.
 
 If an item came back BLOCKED, that is not a failure of the tutorial. Open the spec, the
 test and the stash. Usually the spec and the tester disagree on a detail (a status code,

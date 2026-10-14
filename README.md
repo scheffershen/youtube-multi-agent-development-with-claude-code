@@ -13,15 +13,16 @@ GET    /api/stats                counts + closed ratio
 ```
 
 Three bugs ship on purpose. Three human requests wait in `requests/`. The agents find all
-of them. Read `TUTORIAL.md` for the walkthrough.
+of them. Read `TUTORIAL.md` for the walkthrough, and `git diff main demo/round-1-example`
+for what one verified round produced.
 
 ## Quick start
 
 ```bash
-tools/php bin/console doctrine:schema:create
-tools/php bin/console doctrine:schema:create --env=test
+tools/php bin/console doctrine:migrations:migrate -n
+tools/php bin/console doctrine:migrations:migrate -n --env=test
 tools/php vendor/bin/phpunit                   # green baseline
-tools/php bin/console app:simulate-traffic     # three 500s land in var/log/dev.log
+tools/php bin/console app:simulate-traffic --reset   # three 500s land in var/log/dev.log
 ```
 
 Then, in Claude Code Desktop opened on this folder:
