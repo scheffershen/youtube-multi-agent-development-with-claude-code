@@ -30,8 +30,11 @@ schema in PHP). Avoid `doctrine:schema:drop --force`: the permission classifier 
 - `var/log/dev.log` what the traffic simulator and real requests write. Agents read it.
 - `requests/` human request inbox (one `.md` per request). `requests/done/` after shipping.
 - `specs/` one spec per backlog item, written by the spec-writer agent.
+  `specs/templates/foundation.md` is the skeleton for a URS foundation item.
+- `docs/urs/` requirements documents. `/build <path>` turns one into a module.
 - `reports/round-N.md` one report per improvement round, written by the orchestrator.
-- `.claude/agents/` the five roles. `.claude/skills/improve/` the orchestration loop.
+- `.claude/agents/` the six roles. `.claude/skills/improve/` the maintenance loop,
+  `.claude/skills/build/` the URS build loop (same inner steps, sequential items).
   `.claude/workflows/improve.js` the same loop as a deterministic Workflow script.
 
 ## The improvement loop

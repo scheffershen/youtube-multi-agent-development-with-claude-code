@@ -50,6 +50,16 @@ Optional. Point at the Symfony feature that fits (MapRequestPayload, Validator c
 `createNotFoundException`, etc.). Do not write the code.
 ```
 
+## Foundation items and URS constraints
+
+- If the item's `kind` is `foundation`, copy `specs/templates/foundation.md` and fill
+  every section. Keep its acceptance criteria AC1 to AC5 and add entity-specific ones.
+- If the item carries `constraints` (URS-N ids), read those requirements in the URS and
+  write at least one acceptance criterion per constraint, tagged with the id, for
+  example "AC6 (URS-N-02) PATCH with a non-numeric agent id returns 400 JSON, not 500".
+- Put every URS id from `evidence` on the **Evidence** line so the verifier can trace
+  them to test names.
+
 ## Rules
 
 - A spec with fewer than two acceptance criteria is incomplete. Add edge cases
