@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,18 +25,30 @@ use Symfony\Component\HttpKernel\KernelInterface;
 #[AsCommand(name: 'app:simulate-traffic', description: 'Replay a mix of good and bad API calls to populate the logs')]
 final class SimulateTrafficCommand extends Command
 {
-    public function __construct(private readonly KernelInterface $kernel)
-    {
+    public function __construct(
+        private readonly KernelInterface $kernel,
+        private readonly EntityManagerInterface $em,
+    ) {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->addOption('rounds', null, InputOption::VALUE_REQUIRED, 'How many times to replay the scenario', '1');
+        $this
+            ->addOption('rounds', null, InputOption::VALUE_REQUIRED, 'How many times to replay the scenario', '1')
+            ->addOption('reset', null, InputOption::VALUE_NONE, 'Drop and recreate the schema first, so the replay starts from an empty table');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if ($input->getOption('reset')) {
+            $tool = new SchemaTool($this->em);
+            $metadata = $this->em->getMetadataFactory()->getAllMetadata();
+            $tool->dropSchema($metadata);
+            $tool->createSchema($metadata);
+            $output->writeln('Schema reset: ticket table is empty.');
+        }
+
         $scenario = [
             ['GET', '/api/stats', null],
             ['POST', '/api/tickets', ['title' => 'Login page shows blank screen', 'description' => 'After the 2.3 deploy, Safari users see nothing.', 'priority' => 'high']],
