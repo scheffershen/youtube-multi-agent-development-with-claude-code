@@ -25,7 +25,22 @@ a reusable starter kit of the roles and skills, and the video outline).
 | `demo/round-1-example` | One bug fixed through all roles by `/improve` |
 | `build/urs-002` | The whole SLA module built from `docs/urs/URS-002-sla-module.md`, releases 0.2.0 and 0.3.0 with flash infos and validation dossiers, not tagged |
 
-## Quick start
+## Run it in a container
+
+```bash
+docker compose up --build -d          # builds php:8.4 image, migrates, serves on :8000
+curl http://localhost:8000/api/stats
+docker compose exec app php bin/console app:simulate-traffic --reset
+docker compose run --rm app test      # PHPUnit inside the container
+docker compose down
+```
+
+`var/` is mounted from the host, so `var/log/dev.log` and the SQLite database are the
+same files the agents read. `src/`, `config/`, `migrations/`, `tests/` and `public/` are
+mounted too, so edits are live; `vendor/` stays in the image (rebuild after
+`composer require`). The entrypoint accepts `serve` (default), `test`, or any command.
+
+## Quick start (host PHP)
 
 ```bash
 tools/php bin/console doctrine:migrations:migrate -n

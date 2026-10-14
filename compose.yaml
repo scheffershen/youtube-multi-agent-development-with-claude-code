@@ -1,0 +1,28 @@
+services:
+  app:
+    build: .
+    image: ticketflow:dev
+    ports:
+      - "8000:8000"
+    volumes:
+      # Only logs and the database are shared with the host, so the agents (log-analyst,
+      # verifier) read the same var/log/dev.log the container writes. The cache stays in
+      # the container: Symfony's cache:clear cannot rename directories on a Windows mount.
+      - ./var/log:/app/var/log
+      - ./var/db:/app/var/db
+      # Live source for development; vendor stays in the image.
+      - ./src:/app/src
+      - ./config:/app/config
+      - ./migrations:/app/migrations
+      - ./tests:/app/tests
+      - ./public:/app/public
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: "sqlite:////app/var/db/data_dev.db"
+    healthcheck:
+      # A TCP probe only: an HTTP probe would write a request block into the shared
+      # var/log/dev.log every interval and pollute what the agents read.
+      test: ["CMD", "php", "-r", "$s = @fsockopen('127.0.0.1', 8000, $e, $m, 2); exit($s ? 0 : 1);"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

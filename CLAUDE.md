@@ -18,7 +18,8 @@ loads sqlite, intl, mbstring, openssl.
 | Console | `tools/php bin/console <cmd>` | `tools\php.cmd bin\console <cmd>` |
 | Fake traffic | `tools/php bin/console app:simulate-traffic` | same |
 
-Never call bare `php` or `composer`; they are not on PATH here.
+Never call bare `php` or `composer`; they are not on PATH here. Inside the container
+(`docker compose exec app ...`) `php` is on PATH; the wrappers are for the host only.
 
 Database is SQLite at `var/data_dev.db`; each PHPUnit process gets its own
 `var/data_test_<pid>.db` (set up in `tests/bootstrap.php`), so concurrent suite runs by

@@ -1,0 +1,17 @@
+.git
+.gitattributes
+.claude
+.serena
+.phpunit.cache
+var/
+vendor/
+tools/
+reports/
+specs/
+approvals/
+requests/
+release/
+docs/
+*.md
+compose*.yaml
+Dockerfile

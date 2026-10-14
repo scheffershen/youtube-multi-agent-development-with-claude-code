@@ -22,3 +22,7 @@
 ###> local tools ###
 /.serena/
 ###< local tools ###
+
+###> docker ###
+/var/db/
+###< docker ###
