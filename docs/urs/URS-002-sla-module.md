@@ -117,7 +117,7 @@ replay of the standard scenario produces no HTTP 500.
 | URS-F-02 | F-02.1: specs/F0-sla-foundation.md ; F-02.2..4: specs/U3-ticket-assignee.md | tests/Api/F0SlaFoundationTest.php ; tests/Api/U3TicketAssigneeTest.php | PASS |
 | URS-F-03 | specs/F0-sla-foundation.md | tests/Api/F0SlaFoundationTest.php | PASS |
 | URS-F-04 | specs/U4-breached-filter.md | tests/Api/U4BreachedFilterTest.php | PASS |
-| URS-F-05 | | | |
+| URS-F-05 | specs/U5-sla-report.md | tests/Api/U5SlaReportTest.php | PASS |
 | URS-N-01 | specs/U3-ticket-assignee.md ; specs/U2-agent-active-flag.md | tests/Api/U3TicketAssigneeTest.php ; tests/Api/U2AgentActiveFlagTest.php | PASS (sweep FX pending) |
 | URS-N-02 | specs/R1-filter-tickets-by-status.md ; specs/U1-agents-create-list.md (partial) | tests/Api/R1FilterTicketsByStatusTest.php ; tests/Api/U1AgentsCreateListTest.php | partial, FX pending |
 | URS-N-03 | specs/F0-sla-foundation.md ; R1 ; U3 ; U4 | tests/Api/F0SlaFoundationTest.php ; R1 ; U3 ; U4 test classes | PASS per item (sweep FX pending) |
