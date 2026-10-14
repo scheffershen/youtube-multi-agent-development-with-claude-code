@@ -7,7 +7,7 @@ title: Tickets
 # Tickets
 
 Un ticket représente une demande d'assistance. Il porte un titre, une description, une
-priorité et un statut.
+priorité et un statut, et peut être affecté à un agent.
 
 ## Champs d'un ticket
 
@@ -20,7 +20,10 @@ priorité et un statut.
 | `status` | `open`, `in_progress`, `closed` | Statut courant, `open` à la création |
 | `createdAt` | date ISO 8601 | Date et heure de création |
 | `dueAt` | date ISO 8601 ou `null` | Échéance de traitement, fixée à la création selon la priorité (voir [Échéance de traitement](#échéance-de-traitement)) |
-| `assignee` | `null` | Agent affecté au ticket ; toujours `null` pour l'instant |
+| `assignee` | objet ou `null` | Agent affecté au ticket : `{ "id": <entier>, "name": "<nom>" }`, ou `null` si aucun agent n'est affecté (voir [Agent affecté](#agent-affecté)) |
+
+Les réponses qui décrivent un ticket contiennent exactement ces huit champs, dans cet
+ordre.
 
 ## Échéance de traitement
 
@@ -43,6 +46,26 @@ changement de statut).
 
 **Note sur la visibilité** : les tickets créés avant l'introduction de cette échéance
 n'en ont pas ; leur champ `dueAt` vaut `null`.
+
+## Agent affecté
+
+Le champ `assignee` indique l'agent affecté au ticket. Il vaut `null` tant qu'aucun
+agent n'est affecté, et sinon un objet à deux clés, dans cet ordre :
+
+| Champ | Type | Description |
+|-------|------|-------------|
+| `id` | entier | Identifiant de l'agent |
+| `name` | texte | Nom de l'agent |
+
+L'adresse e-mail et l'indicateur d'activité de l'agent n'y figurent pas ; consultez la
+page [Agents](./agents.md) pour ces informations.
+
+Ce champ est présent dans toutes les réponses qui décrivent un ticket : création
+(toujours `null`, un ticket est créé sans agent), liste (chaque élément), consultation,
+changement de statut et affectation.
+
+**Note sur la visibilité** : un agent désactivé après son affectation reste visible
+comme agent affecté ; la désactivation d'un agent ne retire pas ses tickets.
 
 ## Créer un ticket
 
@@ -106,3 +129,66 @@ Corps attendu : `{ "status": "in_progress" }`. Les valeurs acceptées sont `open
 |------|---------------|
 | `404` | Le ticket n'existe pas |
 | `422` | Le statut demandé n'est pas dans la liste autorisée ; la réponse indique les valeurs acceptées |
+
+## Affecter ou désaffecter un ticket
+
+`PATCH /api/tickets/{id}/assignee`
+
+La requête est envoyée avec l'en-tête `Content-Type: application/json`.
+
+| Champ | Type | Obligatoire | Description |
+|-------|------|-------------|-------------|
+| `agentId` | entier ou `null` | oui | Identifiant d'un agent actif pour affecter le ticket, ou `null` pour retirer l'agent affecté |
+
+Les clés inconnues du corps sont ignorées.
+
+### Affecter un agent
+
+Corps attendu :
+
+```json
+{ "agentId": 1 }
+```
+
+L'agent doit exister et être actif. Réponse `200` avec le ticket mis à jour, dont le
+champ `assignee` décrit l'agent :
+
+```json
+{ "id": 7, "title": "Page de connexion vide", "description": "Depuis la mise à jour, Safari n'affiche rien.", "priority": "high", "status": "open", "createdAt": "2026-10-14T13:01:02+00:00", "dueAt": "2026-10-14T21:01:02+00:00", "assignee": { "id": 1, "name": "Ada" } }
+```
+
+Si le ticket est déjà affecté à un autre agent, celui-ci est remplacé. Affecter de
+nouveau l'agent déjà affecté renvoie `200` avec le même ticket.
+
+### Retirer l'agent affecté
+
+Corps attendu :
+
+```json
+{ "agentId": null }
+```
+
+Réponse `200` avec le ticket mis à jour, dont le champ `assignee` vaut `null`. La
+requête réussit aussi lorsque le ticket n'avait pas d'agent affecté.
+
+Envoyer un corps sans la clé `agentId` (par exemple `{}`) ne retire pas l'agent : la
+requête est refusée (voir ci-dessous).
+
+### Erreurs
+
+Toutes les erreurs sont renvoyées en JSON. Lorsqu'une requête est refusée, le ticket
+n'est pas modifié : l'agent affecté précédemment, ou l'absence d'agent, est conservé.
+
+| Code | Signification |
+|------|---------------|
+| `404` | Le ticket n'existe pas ; la réponse est `{ "error": "Ticket not found" }`. Un identifiant de ticket non numérique renvoie aussi `404` avec `{ "error": "<message>" }` |
+| `404` | Aucun agent ne porte l'identifiant `agentId` (y compris `0` ou un entier négatif) ; la réponse est exactement `{ "error": "Agent not found" }` |
+| `422` | L'agent existe mais est inactif ; la réponse est exactement `{ "errors": { "agentId": "Agent is not active." } }` |
+| `422` | La clé `agentId` est absente du corps, ou présente mais ni entier ni `null` (par exemple `"abc"`, `"5"`, `true` ou `1.5`) ; la réponse est `{ "errors": { "agentId": "<message>" } }` |
+| `400` | Le corps n'est pas du JSON valide ou est vide ; la réponse est `{ "error": "<message>" }` |
+| `415` | Le corps est envoyé avec un `Content-Type` autre que JSON, par exemple `text/plain` ; la réponse est `{ "error": "<message>" }` |
+
+Les contrôles sont effectués dans cet ordre : forme du corps (`415`, `400`, `422`),
+puis existence du ticket (`404`), puis, si `agentId` n'est pas `null`, existence et
+activité de l'agent (`404`, `422`). Avec `agentId` à `null`, aucun contrôle d'agent n'a
+lieu.

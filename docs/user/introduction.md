@@ -15,7 +15,7 @@ réponses possibles.
 
 ## Organisation
 
-- **Tickets** : création, consultation, changement de statut.
+- **Tickets** : création, consultation, changement de statut, affectation à un agent.
 - **Agents** : création, liste.
 - **Statistiques** : vue d'ensemble des tickets par statut.
 - **Annexe** : journal des versions (changelog), flash infos et dossiers de preuves de
