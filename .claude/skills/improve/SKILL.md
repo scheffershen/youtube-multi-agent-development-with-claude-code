@@ -29,6 +29,33 @@ then goes through `approvals/` and a push notification instead of a chat questio
   ask the question again; in `--unattended` mode stop with "still waiting". Only when
   neither exists do you triage.
 
+## Step D: Decisions (applies to every agent call in every step)
+
+Any agent may return a `DECISION NEEDED` block instead of its report (protocol in
+`CLAUDE.md`). When one does:
+
+1. Write `approvals/pending/decision-<item>-D<n>.md`: the block verbatim, plus
+   `**Decision:**` left blank. Commit it as `gate: decision-<item>-D<n>`.
+2. Attended: ask the person with a single question whose options are exactly the
+   agent's A/B/C options (the recommendation first, marked as such), plus "other" for
+   free text. Unattended: push notification naming the file, mark the item WAITING in
+   `reports/items/<item>/decisions.md`, and stop this item; the next run resumes it.
+3. On the answer: move the file to `approvals/approved/`, fill `**Decision:** <letter>
+   by <user> on <date> (chat|file) - <note>`, append one line to
+   `reports/items/<item>/decisions.md` (`D<n> | <role> | <question> | <letter> | <user> | <date>`),
+   commit as `gate: decision-<item>-D<n> decided`.
+4. Send the **same agent** `DECISION D<n>: <letter> - <note>` with SendMessage and wait
+   for its normal report. Never spawn a fresh agent for the continuation; it would redo
+   the work and could re-decide.
+5. If the agent that asked was the verifier, the next verifier round is **not** fresh:
+   send the decision to the same verifier so it re-runs only what the answer affects,
+   and note this exception in the round report.
+
+You, the orchestrator, are bound by the same protocol. A scope flag, a conflict between a
+request and a spec, a choice of which item to drop: write the block yourself with
+`ROLE: orchestrator` and go through steps 1 to 3. The only choices you make alone are
+mechanical ones the skill already fixes (routing a failure by file path, the round cap).
+
 ## Step 1: Triage
 
 Spawn `log-analyst` (background: false). Prompt: "Produce the backlog for round N."
@@ -153,8 +180,8 @@ Write `reports/round-N.md`:
 ```markdown
 # Round N - <date>
 
-| Item | Title | Result | Fix rounds | Commit |
-|------|-------|--------|-----------|--------|
+| Item | Title | Result | Fix rounds | Decisions | Commit |
+|------|-------|--------|-----------|-----------|--------|
 
 ## Remaining CRITICALs (from verifier)
 ## Requests still open
@@ -171,6 +198,9 @@ Then print the table to the user, and nothing else. Do not paste agent transcrip
 - Never switch git branches (checkout, cherry-pick onto another branch) while any agent
   is running: agents read the working tree, not a branch. Do infrastructure commits on
   other branches only between items, when no agent is active.
+- Never decide for a person. If a report contains "I chose", "I assumed" or "I decided"
+  about anything in the decision list, send the agent back: "That is a decision; return
+  the DECISION NEEDED block." Do not accept the report.
 - Never run `git tag`, `git merge`, `git push` or a deployment. They are denied and a
   hook refuses them with a message; if you see that message, write the request to
   `approvals/pending/` and stop. Do not retry.

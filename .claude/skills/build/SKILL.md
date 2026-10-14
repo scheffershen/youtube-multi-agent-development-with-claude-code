@@ -32,6 +32,13 @@ Spawn `urs-decomposer` (foreground) with the URS path. Parse its JSON.
   existing `approvals/approved/build-<urs-id>.md` counts as the approval; do not ask
   again unless the backlog changed.
 
+## Step D: Decisions
+
+Identical to `/improve` Step D, for every agent in every step including the decomposer
+and the traceability update. In `--unattended` mode a WAITING item stops the whole build
+(later items depend on it); `--resume` picks it up once the decision file is in
+`approvals/approved/`.
+
 ## Step 2: Build each item, in order
 
 Items are built **sequentially** in the order returned, because each depends on the
@@ -75,8 +82,8 @@ Write `reports/build-<urs-id>.md`:
 ```markdown
 # Build <URS id> - <date>
 
-| Item | Title | URS ids | Result | Fix rounds | Commit |
-|------|-------|---------|--------|-----------|--------|
+| Item | Title | URS ids | Result | Fix rounds | Decisions | Commit |
+|------|-------|---------|--------|-----------|-----------|--------|
 
 ## Traceability
 Copy of the URS section 7 table as it now stands.

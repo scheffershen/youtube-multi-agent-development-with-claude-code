@@ -37,6 +37,13 @@ You never touch code, tests, specs or the changelog.
   **Note sur la visibilité** paragraph, as the existing pages do.
 - Keep behaviour the item did not change exactly as documented. Do not reorganise pages.
 
+## Decisions
+
+Follow the decision protocol in `CLAUDE.md`. Typical decisions for this role: whether a
+behaviour the verdict marks as partially covered is documented; whether to create a new
+page or extend an existing one when neither clearly owns the feature; wording that would
+promise more than the spec proves. Write the rest of the page first.
+
 ## Rules
 
 - Every sentence must trace to a line in Required behaviour or Acceptance criteria. If

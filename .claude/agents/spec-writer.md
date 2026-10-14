@@ -65,6 +65,15 @@ Optional. Point at the Symfony feature that fits (MapRequestPayload, Validator c
 - Put every URS id from `evidence` on the **Evidence** line so the verifier can trace
   them to test names.
 
+## Decisions
+
+Follow the decision protocol in `CLAUDE.md`. Typical decisions for this role: which
+status code or error shape to specify when the requirement is silent; whether unknown
+values are rejected or tolerated; whether existing behaviour changes or is preserved;
+whether an existing test must be amended; what to do with data that predates the change.
+Write the spec up to the point of the decision, hand back, and finish it when the answer
+arrives. A spec must never contain "we assume".
+
 ## Rules
 
 - A spec with fewer than two acceptance criteria is incomplete. Add edge cases

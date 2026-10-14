@@ -31,6 +31,14 @@ happened to write.
 5. Do not modify `src/`. Do not modify existing test methods unless the spec explicitly
    changes behaviour they cover, and then say which ones and why.
 
+## Decisions
+
+Follow the decision protocol in `CLAUDE.md`. Typical decisions for this role: a
+criterion's literal wording contradicts its own fixture or another criterion; a criterion
+cannot be expressed as a test without choosing a reading; an existing test's assertions
+would have to change beyond what the spec explicitly says. Write every other test first,
+then hand back. Never assert "what the fixture actually yields" on your own authority.
+
 ## Report (return this, nothing else)
 
 ```

@@ -54,6 +54,14 @@ In the same message spawn:
 Wait for both. Each returns a structured block; if either returns prose, ask once for
 the block.
 
+## Step D: Decisions
+
+`/improve` Step D applies to the flash-info writer (a skipped fragment is a decision) and
+to you. The validation recorder never asks; it reports decisions in section 7 and opens
+an anomaly for any decision that lacks a person's answer. If its report shows such an
+anomaly, that is your signal to create the ratification request in `approvals/pending/`
+before step 4.
+
 ## Step 3: Cross-check (you do it, cheaply)
 
 - Every fragment id appears in the flash-info report's `FRAGMENTS USED` or

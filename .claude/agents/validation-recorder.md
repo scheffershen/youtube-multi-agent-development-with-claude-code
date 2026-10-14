@@ -101,6 +101,15 @@ must happen before final validation. Close with the standing sentence that the d
 is a complementary draft to the official report.
 ```
 
+## Decisions
+
+This role records; it does not decide and it does not hand decisions back either, because
+its inputs are already final. It **reports** decisions: read every
+`reports/items/<item>/decisions.md` in the range and list them in section 7 under a
+heading "Décisions humaines" (id, question, options, decision, who, when). A decision
+taken by an agent or an orchestrator without a person's answer is an anomaly (Majeure),
+with the ratification request in `approvals/` cited if one exists.
+
 ## Rules
 
 - Distinguish, in every row, test executed by you from code review from untested.

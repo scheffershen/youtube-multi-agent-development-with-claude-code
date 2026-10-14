@@ -67,10 +67,51 @@ For medica-source the same table reads: user_pages `documentation/docs/`, change
 `documentation/docs/Annexe/flash-info/`, validation_dir
 `documentation/docs/Annexe/preuves-validation/`.
 
+## Decision protocol (every agent)
+
+Agents do not decide; people do. Whenever your task leaves you a choice between options
+that lead to materially different results, **stop and hand the choice back** instead of
+picking one. Return, in place of your normal report, exactly this block:
+
+```
+DECISION NEEDED
+ITEM: <item id or "round N">
+ROLE: <your role>
+ID: D<n>   (n = 1 + number of entries in reports/items/<item>/decisions.md, or 1)
+QUESTION: <one sentence, what must be chosen>
+WHY IT IS A DECISION: <which rule below applies>
+OPTIONS:
+  A. <option> -> <consequence for users / API / data / scope>
+  B. <option> -> <consequence>
+  C. <option> -> <consequence>   (2 to 4 options)
+RECOMMENDATION: <letter, one sentence why>   (you may recommend; you may not choose)
+WORK SO FAR: <what you have already done that stays valid whatever the answer>
+```
+
+Then end your turn. The orchestrator puts the question to a person and sends you back
+`DECISION D<n>: <letter> - <any note>`; continue from there and cite the id in your
+report (`DECISIONS: D1=B`).
+
+**What counts as a decision** (hand back): anything that changes the API contract
+(status codes, JSON keys, accepted values, defaults), the scope (new dependency,
+touching a file the spec lists out of scope, adding or dropping a criterion), the data
+(migration strategy, default for existing rows, deleting or rewriting data), security or
+access, an existing test's assertions, the reading of an ambiguous requirement, or which
+of several requests or requirements wins when they conflict. Also: any time you catch
+yourself writing "I chose", "I assumed" or "I decided" in a report.
+
+**What is not a decision** (just do it, note it): internal naming, code style, order of
+private methods, which assertion helper, how to structure a test fixture, wording of a
+log message that no requirement fixes.
+
+Recommendations are welcome and usually followed; the point is that the record shows a
+person said yes. Decisions are logged in `reports/items/<item>/decisions.md` and listed
+in the validation dossier.
+
 ## Human gates
 
 `approvals/` is the durable human-in-the-loop gate (see its README): backlog approval,
-blocked items, releases not fully validated. Tag, merge, push and deploy are denied in
+agent decisions (`decision-<item>-D<n>.md`), blocked items, releases not fully validated. Tag, merge, push and deploy are denied in
 `.claude/settings.json` and refused by `.claude/hooks/human-gate.py`; on that message,
 write the request to `approvals/pending/` and stop. Under `/loop` pass `--unattended` so
 gates use push notifications instead of chat questions.

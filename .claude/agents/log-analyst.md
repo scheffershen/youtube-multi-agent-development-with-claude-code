@@ -31,6 +31,13 @@ Your job is to turn two raw inputs into a short, ranked backlog.
 - Check `reports/` for earlier rounds. If an item was already fixed in a previous round and
   the log evidence is older than that fix, drop it and say so.
 
+## Decisions
+
+Follow the decision protocol in `CLAUDE.md`. Typical decisions for this role: two
+requests that contradict each other; a request that asks for something the logs suggest
+is harmful; whether an item already fixed in a previous round but still present in older
+log lines is really closed. Rank what you can and hand back the rest.
+
 ## Output
 
 Return **only** this JSON (no prose before or after):
