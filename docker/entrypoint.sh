@@ -13,6 +13,10 @@ case "${1:-serve}" in
     ;;
   test)
     shift
+    # The container's runtime env (APP_ENV=dev, DATABASE_URL) must not leak into the
+    # test kernel: phpunit.dist.xml and .env.test own those for the test environment.
+    unset DATABASE_URL
+    export APP_ENV=test
     exec php vendor/bin/phpunit "$@"
     ;;
   *)
