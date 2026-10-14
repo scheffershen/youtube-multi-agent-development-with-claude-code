@@ -15,6 +15,7 @@ it. Approval recorded in `approvals/approved/build-urs-002.md`.
 | U4 | GET /api/tickets?breached= | F-04.1..3, N-02, N-03 | PASS | 0 | 8fb7f22 |
 | U5 | GET /api/reports/sla | F-05.1..3, N-02 | PASS | 0 | 625b2ed |
 | FX | URS-N acceptance sweep | N-01..03, section 6 | PASS | 0 | 51f343d |
+| R2 | urgent priority with a 2-hour SLA target (request 002, after the build) | request 002, F-03.2, F-05.2 | PASS | 0 (3 human decisions) | 1eac315 |
 
 Suite: 3 tests at the start of the URS, 117 tests (1128 assertions) at the end. Standard
 traffic replay after FX: HTTP 200: 6, 201: 2, 404: 1, 422: 3, no 5xx, zero CRITICAL.
@@ -39,8 +40,9 @@ spec and test paths.
 
 ## Open points for the human
 
-- `requests/002-urgent-priority.md`: decide the SLA target for `urgent`, then run
-  `/improve`.
+- Request 002 was closed by item R2 on 2026-10-14 after Yi Shen decided D1 (2 hours),
+  D2 (after high) and D3 (amend four U5 assertions); the two earlier decisions taken
+  without a person (U1 dependencies, FX rejecting urgent) were ratified the same day.
 - Tag and merge of `build/urs-002` after reading the release dossiers (0.2.0 and 0.3.0).
 
 ## Lessons encoded during this build
