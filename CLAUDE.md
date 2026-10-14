@@ -20,8 +20,9 @@ loads sqlite, intl, mbstring, openssl.
 
 Never call bare `php` or `composer`; they are not on PATH here.
 
-Database is SQLite at `var/data_dev.db` and `var/data_test.db`. Tests reset the schema
-themselves. To reset the dev DB use `app:simulate-traffic --reset` (it recreates the
+Database is SQLite at `var/data_dev.db`; each PHPUnit process gets its own
+`var/data_test_<pid>.db` (set up in `tests/bootstrap.php`), so concurrent suite runs by
+several agents do not collide. Tests reset the schema themselves. To reset the dev DB use `app:simulate-traffic --reset` (it recreates the
 schema in PHP). Avoid `doctrine:schema:drop --force`: the permission classifier blocks it.
 
 ## Layout
