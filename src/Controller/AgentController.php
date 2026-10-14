@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\CreateAgentRequest;
+use App\Dto\UpdateAgentActiveRequest;
 use App\Entity\Agent;
 use App\Repository\AgentRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
@@ -56,6 +57,23 @@ final class AgentController extends AbstractController
         $this->logger->info('Agent created', ['id' => $agent->getId(), 'email' => $agent->getEmail()]);
 
         return $this->json($agent->toArray(), Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id}', name: 'agent_active', requirements: ['id' => '\d+'], methods: ['PATCH'])]
+    public function changeActive(int $id, #[MapRequestPayload(acceptFormat: 'json')] UpdateAgentActiveRequest $payload): JsonResponse
+    {
+        $agent = $this->agents->find($id);
+        if (null === $agent) {
+            return $this->json(['error' => 'Agent not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $agent->setActive($payload->active);
+        $this->em->flush();
+
+        // Logged after the flush so a failed flush is not recorded as a change (URS-N-01).
+        $this->logger->info('Agent activation changed', ['id' => $id, 'active' => $payload->active]);
+
+        return $this->json($agent->toArray());
     }
 
     private function duplicateEmail(): JsonResponse

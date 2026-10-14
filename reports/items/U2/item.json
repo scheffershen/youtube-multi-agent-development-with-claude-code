@@ -1,0 +1,1 @@
+{"id": "U2", "kind": "feature", "title": "PATCH /api/agents/{id} to change the active flag", "evidence": ["URS-F-01.4"], "constraints": ["URS-N-01", "URS-N-02"], "depends_on": ["F0", "U1"], "priority": 3, "spec": "specs/U2-agent-active-flag.md"}
