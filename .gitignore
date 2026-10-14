@@ -18,3 +18,7 @@
 /tools/.composer-home/
 /var/
 ###< ticketflow ###
+
+###> local tools ###
+/.serena/
+###< local tools ###

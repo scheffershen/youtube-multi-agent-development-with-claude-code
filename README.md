@@ -1,36 +1,46 @@
 # TicketFlow: a multi-agent playground on Symfony
 
-A deliberately imperfect ticket API plus a team of five Claude Code agents that read the
-logs and a human request inbox, then fix and extend the app on their own, round after
-round.
+A deliberately imperfect ticket API plus a team of ten Claude Code agents that read the
+logs, a human request inbox and requirements documents, then specify, build, test, verify,
+document and release the app on their own, with human gates where a person must decide.
 
 ```
-GET    /api/tickets              list
+GET    /api/tickets              list (?status=, ?breached=)
 POST   /api/tickets              create  {title, description, priority}
 GET    /api/tickets/{id}         show
 PATCH  /api/tickets/{id}/status  {status: open|in_progress|closed}
-GET    /api/stats                counts + closed ratio
+PATCH  /api/tickets/{id}/assignee {agentId}
+GET    /api/agents, POST /api/agents, PATCH /api/agents/{id}
+GET    /api/stats, GET /api/reports/sla
 ```
 
-Three bugs ship on purpose. Three human requests wait in `requests/`. The agents find all
-of them. Read `TUTORIAL.md` for the walkthrough, and `git diff main demo/round-1-example`
-for what one verified round produced.
+**The tutorial lives in its own repository:** `../ticketflow-tutorial` (TUTORIAL.md,
+a reusable starter kit of the roles and skills, and the video outline).
+
+## Branches
+
+| Branch | What it holds |
+|--------|---------------|
+| `main` | Pristine demo: three planted 500s, open requests, all agent infrastructure |
+| `demo/round-1-example` | One bug fixed through all roles by `/improve` |
+| `build/urs-002` | The whole SLA module built from `docs/urs/URS-002-sla-module.md`, releases 0.2.0 and 0.3.0 with flash infos and validation dossiers, not tagged |
 
 ## Quick start
 
 ```bash
 tools/php bin/console doctrine:migrations:migrate -n
 tools/php bin/console doctrine:migrations:migrate -n --env=test
-tools/php vendor/bin/phpunit                   # green baseline
-tools/php bin/console app:simulate-traffic --reset   # three 500s land in var/log/dev.log
+tools/php vendor/bin/phpunit                          # green baseline
+tools/php bin/console app:simulate-traffic --reset    # three 500s land in var/log/dev.log
 ```
 
-Then, in Claude Code Desktop opened on this folder:
+Then, in Claude Code Desktop opened on this folder (new session so the roles register):
 
 ```
-/improve --dry-run     # see what the agents would pick
-/improve               # one full round
-/loop 30m /improve     # keep going on a timer
+/improve --dry-run                       # see what the agents would pick
+/improve                                 # one full round, with the approval gate
+/build docs/urs/URS-002-sla-module.md    # build a module from a requirements document
+/release 0.4.0                           # changelog, flash info, validation dossier
 ```
 
 PHP lives at `C:\php\php-8.4.5-nts-Win32-vs17-x64`. Edit `tools/php.cmd`, `tools/php`

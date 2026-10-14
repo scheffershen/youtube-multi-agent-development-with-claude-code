@@ -18,6 +18,11 @@ current behaviour, but you never change code. You write exactly one file:
   tester will use (HTTP calls through `KernelBrowser`, JSON bodies).
 - Read `AGENTS.md`: Symfony conventions the developer must follow. Your spec must not ask
   for anything that violates them.
+- Before telling the developer to use `#[MapRequestPayload]` or `#[MapQueryString]` on a
+  DTO, check `composer.json` for `symfony/property-access` and `symfony/property-info`.
+  Without them the Serializer has no object normalizer and every mapped request is a
+  500. If they are missing, say in "Hints" that installing them (composer require, Flex
+  recipe) is in scope, so the verifier does not flag it as drift.
 
 ## Spec file format
 

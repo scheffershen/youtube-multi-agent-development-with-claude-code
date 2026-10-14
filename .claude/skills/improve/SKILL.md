@@ -19,8 +19,15 @@ then goes through `approvals/` and a push notification instead of a chat questio
   stop and report; a red baseline makes verification meaningless.
 - `git status --porcelain` must be clean. If not, stop and ask the user whether to commit
   or stash. (Under `/loop` with no user available: skip the round and report.)
-- Create `reports/` and `specs/` if missing. Compute the round number as
-  `1 + number of files in reports/`.
+- Create `reports/` and `specs/` if missing. The round number `N` is
+  `1 + number of files matching reports/round-*.md`. A round that is **waiting for
+  approval writes no report**, so `N` stays the same until the round actually runs; the
+  pending or approved file `approvals/*/improve-round-N.md` is the round's identity.
+- Resumption order, before triage: if `approvals/approved/improve-round-N.md` exists and
+  `reports/round-N.md` does not, skip triage and use the approved table. If
+  `approvals/pending/improve-round-N.md` exists, do not triage again: in attended mode
+  ask the question again; in `--unattended` mode stop with "still waiting". Only when
+  neither exists do you triage.
 
 ## Step 1: Triage
 
@@ -38,10 +45,11 @@ If `--dry-run`, print the backlog as a table and stop.
   `Approved by <user> on <date> (chat)`, commit `gate: improve-round-N approved`, and
   continue. On reject, move it to `rejected/` with their reason and stop. On edit, they
   change the table in the file and move it themselves; re-read it from `approved/`.
-- `--unattended`: if `approvals/approved/improve-round-N.md` already exists, use its
-  table and continue. Otherwise send a push notification ("Round N backlog awaits
-  approval: approvals/pending/improve-round-N.md"), write `reports/round-N.md` saying
-  "waiting for approval", and stop. The next round re-checks.
+- `--unattended`: send a push notification ("Round N backlog awaits approval:
+  approvals/pending/improve-round-N.md"), commit the pending file as
+  `gate: improve-round-N pending` so the tree stays clean for the clean-tree
+  precondition, and stop **without writing a report**. The next invocation finds the
+  pending or approved file for the same `N` (see Step 0) and resumes from there.
 
 ## Step 2: For each item, in priority order
 
@@ -74,6 +82,10 @@ forget this, the verifier will fail the item on a criterion nobody was assigned.
 ### 2c. Verify
 
 Spawn `verifier` with only: "Verify `<spec path>`." Do not forward the developer's report.
+Verification is **serialized**: never run two verifiers at once in the same working tree,
+and do not start the next item's developer or tester until the verdict is in. The
+verifier uses its own SQLite file for the traffic replay (see its role); the log file is
+shared, which is why it only reads the lines appended during its own run.
 Parse the verdict JSON and save it verbatim to `reports/items/<item id>/verdict-<n>.json`
 where `<n>` is the verifier round (1 for the first). Also write
 `reports/items/<item id>/item.json` with the backlog item once, on the first round.
@@ -90,9 +102,17 @@ Set `round = 1`. While verdict is FAIL and `round < max-rounds`:
   memory of what it expected to see).
 - `round += 1`.
 
-If still FAIL after `max-rounds`, mark the item BLOCKED, keep the spec and tests, and
-`git stash` the `src/` changes into a stash named after the spec so the next item starts
-from a clean tree. Note the stash name in the report.
+If still FAIL after `max-rounds`, mark the item BLOCKED and restore a clean baseline
+for the next item in this order:
+
+1. Commit what the human needs to decide: the spec, `reports/items/<id>/` and the
+   `approvals/pending/blocked-<id>.md` file (next paragraph), as `gate: blocked-<id>`.
+2. `git stash push -u -m "blocked-<id>"`: this takes **everything else** the item
+   produced (src/, tests/, migrations/, composer.json and lock, config/, new files),
+   not only `src/`. Check with `git status --porcelain` that the tree is clean at HEAD
+   and `tools/php vendor/bin/phpunit` is green again before starting the next item.
+   If the suite is not green at HEAD, stop the round: the baseline was already broken.
+3. Note the stash name in the report. The human restores it with `git stash pop`.
 
 **Human gate: blocked item.** Write `approvals/pending/blocked-<id>.md` with the three
 verdicts' `failures` side by side and the stash name, offering: fix the spec (say what),
@@ -148,6 +168,9 @@ Then print the table to the user, and nothing else. Do not paste agent transcrip
 - Never let the developer see the verifier's expectations before the verifier runs, and
   never let the verifier see the developer's report. That separation is the point.
 - Never raise `max-rounds` on your own. Oscillation is a signal for a human.
+- Never switch git branches (checkout, cherry-pick onto another branch) while any agent
+  is running: agents read the working tree, not a branch. Do infrastructure commits on
+  other branches only between items, when no agent is active.
 - Never run `git tag`, `git merge`, `git push` or a deployment. They are denied and a
   hook refuses them with a message; if you see that message, write the request to
   `approvals/pending/` and stop. Do not retry.

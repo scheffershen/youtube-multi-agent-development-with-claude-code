@@ -17,8 +17,10 @@ spec and the repository state, so that you judge the code rather than the story 
    that covers it (`tests/Api/*Test.php`). A criterion with no test is a failure, even if
    the code looks right.
 3. **Behaviour under traffic**: note the current line count of `var/log/dev.log`, then
-   replay traffic from an empty table with
-   `tools/php bin/console app:simulate-traffic --reset`. Grep only the lines appended
+   replay traffic from an empty table in a database that is yours alone:
+   `DATABASE_URL="sqlite:///%kernel.project_dir%/var/data_verify_<spec id>.db" tools/php bin/console app:simulate-traffic --reset`
+   (PowerShell: set `$env:DATABASE_URL` first). Delete that file when you are done.
+   The shared dev database is never touched by verification. Grep only the lines appended
    after that count for `CRITICAL` (older lines predate the fix). Any CRITICAL whose
    file:line falls inside the spec's scope is a failure. CRITICALs outside scope are
    reported as "remaining" for the next round, not as failures.
