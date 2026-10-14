@@ -62,6 +62,31 @@ Réponse `201` avec le ticket créé.
 
 Renvoie `{ "items": [...], "count": n }`, du plus récent au plus ancien.
 
+### Filtrer par statut
+
+Vous pouvez restreindre la liste aux tickets d'un statut donné avec le paramètre de
+requête `status` :
+
+`GET /api/tickets?status=open`
+
+| Paramètre | Type | Obligatoire | Description |
+|-----------|------|-------------|-------------|
+| `status` | `open`, `in_progress`, `closed` | non | Ne renvoie que les tickets dont le statut est exactement cette valeur |
+
+Sans le paramètre, la liste complète est renvoyée, comme auparavant. Avec le paramètre,
+la réponse garde la même forme (`items` et `count`), le même ordre du plus récent au
+plus ancien et les mêmes champs par ticket ; `count` est le nombre de tickets renvoyés.
+Si aucun ticket ne correspond, la réponse est `200` avec `{ "items": [], "count": 0 }`.
+
+La valeur est comparée exactement, en respectant la casse : `Open` ou `OPEN` ne sont pas
+reconnus comme `open`, et une valeur vide ou entourée d'espaces est refusée.
+
+### Erreurs
+
+| Code | Signification |
+|------|---------------|
+| `400` | La valeur de `status` n'est pas dans la liste autorisée (valeur inconnue, vide, casse différente, espaces, ou valeur non scalaire telle que `status[]=open`) ; la réponse JSON contient `"error": "Invalid status"` et la liste des valeurs acceptées dans `allowed` |
+
 ## Consulter un ticket
 
 `GET /api/tickets/{id}`
