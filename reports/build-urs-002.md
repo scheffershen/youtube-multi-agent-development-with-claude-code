@@ -1,45 +1,52 @@
-# Build URS-002 - 2026-10-14 (in progress)
+# Build URS-002 - 2026-10-14 (complete)
 
-Run by hand through the roles to validate the `/build` path. Items U1 to FX remain; run
-`/build docs/urs/URS-002-sla-module.md --resume` to continue.
+Run through the ten roles on branch `build/urs-002`: urs-decomposer once, then
+spec-writer -> developer + tester -> verifier (fresh each round) -> doc-writer +
+changelog-writer per item. Request 001 was shipped first (item R1) because U4 depends on
+it. Approval recorded in `approvals/approved/build-urs-002.md`.
 
 | Item | Title | URS ids | Result | Fix rounds | Commit |
 |------|-------|---------|--------|-----------|--------|
-| F0 | Agent entity, Ticket assignee + dueAt, SLA constants, migration, ApiTestCase | F-01.1, F-02.1, F-03.1..4, N-03 | PASS | 1 | see `git log` on `build/urs-002` |
-| U1 | POST/GET /api/agents | F-01.2, F-01.3 | pending | | |
-| U2 | PATCH /api/agents/{id} active flag | F-01.4 | pending | | |
-| U3 | PATCH /api/tickets/{id}/assignee | F-02.2..4 | pending | | |
-| U4 | GET /api/tickets?breached= | F-04.1..3 | pending | | |
-| U5 | GET /api/reports/sla | F-05.1..3 | pending | | |
-| FX | URS-N acceptance sweep | N-01..03 | pending | | |
+| F0 | Agent entity, Ticket assignee + dueAt, SLA constants, migration, ApiTestCase | F-01.1, F-02.1, F-03.1..4, N-03 | PASS | 1 | c63c5ff |
+| R1 | Filter GET /api/tickets by status (request 001) | request 001, N-02, N-03 | PASS | 0 | 5441fa6 |
+| U1 | POST/GET /api/agents | F-01.2, F-01.3, N-02 | PASS | 0 | b78d25e |
+| U3 | PATCH /api/tickets/{id}/assignee | F-02.2..4, N-01..03 | PASS | 0 | a44175d |
+| U2 | PATCH /api/agents/{id} active flag | F-01.4, N-01, N-02 | PASS | 0 | 87b6736 |
+| U4 | GET /api/tickets?breached= | F-04.1..3, N-02, N-03 | PASS | 0 | 8fb7f22 |
+| U5 | GET /api/reports/sla | F-05.1..3, N-02 | PASS | 0 | 625b2ed |
+| FX | URS-N acceptance sweep | N-01..03, section 6 | PASS | 0 | 51f343d |
 
-Role cost for F0, approximate output tokens:
+Suite: 3 tests at the start of the URS, 117 tests (1128 assertions) at the end. Standard
+traffic replay after FX: HTTP 200: 6, 201: 2, 404: 1, 422: 3, no 5xx, zero CRITICAL.
 
-| Role | Tokens | Tool calls | Wall time |
-|------|--------|-----------|-----------|
-| urs-decomposer | 84k | 5 | 125 s |
-| spec-writer | 102k | 11 | 270 s |
-| developer | 85k | 16 | 150 s |
-| tester | 90k + 96k (fix round) | 11 + 6 | 220 s + 56 s |
-| verifier x2 | 105k + 103k | 14 + 15 | 189 s + 124 s |
-
-Suite before: OK (3 tests, 10 assertions). After: OK (18 tests, 160 assertions).
+Approximate cost: about 95k output tokens per agent run, 7 to 8 runs per item, so
+roughly 650k to 750k tokens per item and 5.5M for the eight items including the three
+release-level agents.
 
 ## Traceability
 
-See section 7 of `docs/urs/URS-002-sla-module.md`.
+Section 7 of `docs/urs/URS-002-sla-module.md`: every URS-F and URS-N row is PASS with
+spec and test paths.
+
+## Decisions taken by the orchestrator
+
+- U1: accepted the addition of `symfony/property-access` and `symfony/property-info`
+  (required by `#[MapRequestPayload]`), flagged by the verifier as touching files the
+  spec listed out of scope. The spec-writer role now checks for them.
+- FX: `urgent` is not added as a priority. Request 002 names no SLA target, and under
+  URS-F-03.2 it would default to 24 h, looser than `high`. POST with `urgent` is a 422.
+  Request 002 stays in the inbox for its own item.
 
 ## Open points for the human
 
-- Round 1 FAIL was an orchestration mistake, not an agent mistake: the spec required the
-  existing `TicketApiTest` to move onto the new base class, and the orchestrator's prompt
-  kept the developer out of `tests/` while the tester was told not to restructure
-  existing classes. Nobody owned the criterion. The `/improve` skill now states the split
-  explicitly in step 2b.
-- The verifier's mandated traffic replay rewrites `var/data_dev.db`. The tester's first
-  migration test depended on that file's contents and was therefore flaky; it now builds
-  its own fixture. Rule of thumb for future specs: a test must never read a database the
-  verifier is allowed to reset.
-- Decomposer flagged that U4 (breach filter combinable with status filter) depends on
-  `requests/001`, which is not in this URS. Decide before U4: ship request 001 first via
-  `/improve`, or accept U4 with the combination tested only against "no status filter".
+- `requests/002-urgent-priority.md`: decide the SLA target for `urgent`, then run
+  `/improve`.
+- Tag and merge of `build/urs-002` after reading the release dossiers (0.2.0 and 0.3.0).
+
+## Lessons encoded during this build
+
+- Shared SQLite test database made concurrent suite runs flaky: each PHPUnit process now
+  gets its own file (`tests/bootstrap.php`, `.env.test`).
+- The orchestrator must not switch branches while agents run; one brief checkout
+  mid-run made a doc-writer re-read its inputs. Rule added to `/improve`.
+- Ownership of `tests/` must be stated in both build prompts (from the F0 round).

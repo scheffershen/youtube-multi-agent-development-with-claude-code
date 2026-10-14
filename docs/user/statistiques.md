@@ -18,6 +18,14 @@ Renvoie le nombre de tickets par statut et la part de tickets clôturés.
 | `closed` | entier | Tickets au statut `closed` |
 | `closed_ratio` | nombre | Part des tickets clôturés, en pourcentage arrondi à une décimale |
 
+La réponse `200` contient exactement ces cinq champs, dans cet ordre.
+
+`closed_ratio` vaut `closed` divisé par `total`, multiplié par 100 et arrondi à une
+décimale : 1 ticket clôturé sur 3 donne `33.3`.
+
+Sans aucun ticket, la réponse est `200` avec les quatre compteurs à `0` et `closed_ratio`
+à `0` ; aucune division n'est effectuée dans ce cas.
+
 ## Rapport SLA par priorité
 
 `GET /api/reports/sla`

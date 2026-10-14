@@ -36,8 +36,13 @@ augmentée d'un délai cible qui dépend de la priorité déclarée :
 | `normal` | 24 heures |
 | `high` | 8 heures |
 
-Toute autre valeur de priorité reçoit le délai de `normal`, soit 24 heures. La
-correspondance est sensible à la casse : `LOW` n'est pas reconnu comme `low`.
+La correspondance est sensible à la casse : `LOW` n'est pas reconnu comme `low`. Seules
+ces trois valeurs sont acceptées à la création (voir [Créer un ticket](#créer-un-ticket)).
+
+**Note sur la visibilité** : les tickets créés avant l'introduction de ce contrôle avec
+une autre valeur de priorité ont reçu le délai de `normal`, soit 24 heures ; ils sont
+conservés tels quels et restent renvoyés, avec leur priorité d'origine, par la liste et
+la consultation.
 
 L'échéance est enregistrée une fois pour toutes à la création et n'est jamais
 recalculée. Elle est renvoyée au format ISO 8601, comme `createdAt`, et prend la même
@@ -71,13 +76,42 @@ comme agent affecté ; la désactivation d'un agent ne retire pas ses tickets.
 
 `POST /api/tickets`
 
+La requête est envoyée avec l'en-tête `Content-Type: application/json`.
+
+| Champ | Type | Obligatoire | Description |
+|-------|------|-------------|-------------|
+| `title` | texte | oui | Titre court de la demande ; ni vide ni composé uniquement d'espaces, 120 caractères au plus |
+| `description` | texte | oui | Détail de la demande ; ni vide ni composée uniquement d'espaces |
+| `priority` | `low`, `normal` ou `high` | oui | Priorité de la demande, exactement l'une de ces trois valeurs |
+
 Corps attendu :
 
 ```json
 { "title": "Page de connexion vide", "description": "Depuis la mise à jour, Safari n'affiche rien.", "priority": "high" }
 ```
 
-Réponse `201` avec le ticket créé.
+Réponse `201` avec le ticket créé, dans la forme décrite dans
+[Champs d'un ticket](#champs-dun-ticket) : `title`, `description` et `priority` tels
+qu'envoyés, `status` à `open`, `assignee` à `null` et `dueAt` calculé selon la priorité
+(voir [Échéance de traitement](#échéance-de-traitement)).
+
+Le titre et la description sont enregistrés tels qu'envoyés : aucun espace n'est retiré.
+Un titre de 120 caractères exactement est accepté. Les clés inconnues du corps sont
+ignorées et n'apparaissent pas dans la réponse.
+
+### Erreurs
+
+Toutes les erreurs sont renvoyées en JSON. Lorsqu'une requête est refusée, aucun ticket
+n'est créé.
+
+| Code | Signification |
+|------|---------------|
+| `422` | Un ou plusieurs champs sont invalides. La réponse est `{ "errors": { "<champ>": "<message>" } }` : une clé par champ fautif (`title`, `description` ou `priority`), et uniquement ces champs-là. Un corps `{}` renvoie ainsi les trois clés |
+| `422` | `priority` manquant, `null`, d'un autre type que texte (par exemple `123`), vide, ou hors de la liste `low`, `normal`, `high`. La comparaison respecte la casse : `High` et `LOW` sont refusés, de même que `urgent`. La clé `priority` est la seule clé de `errors` si les autres champs sont valides |
+| `422` | `title` manquant, `null`, d'un autre type que texte, vide, composé uniquement d'espaces ou de plus de 120 caractères ; la clé `title` figure dans `errors` |
+| `422` | `description` manquante, `null`, d'un autre type que texte, vide ou composée uniquement d'espaces ; la clé `description` figure dans `errors` |
+| `400` | Le corps n'est pas du JSON valide ou est vide ; la réponse est `{ "error": "<message>" }` |
+| `415` | Le corps est envoyé avec un `Content-Type` autre que JSON, par exemple `text/plain` ; la réponse est `{ "error": "<message>" }` |
 
 ## Lister les tickets
 
@@ -165,7 +199,18 @@ Toutes les erreurs sont renvoyées en JSON. Le paramètre `status` est contrôl�
 
 `GET /api/tickets/{id}`
 
-Renvoie le ticket demandé.
+Renvoie le ticket demandé, avec les huit champs décrits dans
+[Champs d'un ticket](#champs-dun-ticket). `{id}` est l'identifiant numérique du ticket.
+
+### Erreurs
+
+Toutes les erreurs sont renvoyées en JSON.
+
+| Code | Signification |
+|------|---------------|
+| `404` | Aucun ticket ne porte l'identifiant demandé (y compris `0`) ; la réponse est exactement `{ "error": "Ticket not found" }` |
+| `404` | L'identifiant n'est pas numérique, par exemple `/api/tickets/abc` ; la réponse est `{ "error": "<message>" }` |
+| `405` | La méthode n'est pas `GET`, par exemple `DELETE /api/tickets/1` ; la réponse contient une clé `error` et l'en-tête `Allow` indique `GET` |
 
 ## Changer le statut
 

@@ -148,6 +148,9 @@ Then print the table to the user, and nothing else. Do not paste agent transcrip
 - Never let the developer see the verifier's expectations before the verifier runs, and
   never let the verifier see the developer's report. That separation is the point.
 - Never raise `max-rounds` on your own. Oscillation is a signal for a human.
+- Never switch git branches (checkout, cherry-pick onto another branch) while any agent
+  is running: agents read the working tree, not a branch. Do infrastructure commits on
+  other branches only between items, when no agent is active.
 - Never run `git tag`, `git merge`, `git push` or a deployment. They are denied and a
   hook refuses them with a message; if you see that message, write the request to
   `approvals/pending/` and stop. Do not retry.
