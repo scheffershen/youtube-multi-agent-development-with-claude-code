@@ -116,11 +116,11 @@ replay of the standard scenario produces no HTTP 500.
 | URS-F-01 | F-01.1: specs/F0-sla-foundation.md ; F-01.2, F-01.3: specs/U1-agents-create-list.md ; F-01.4: specs/U2-agent-active-flag.md | tests/Api/F0SlaFoundationTest.php ; tests/Api/U1AgentsCreateListTest.php ; tests/Api/U2AgentActiveFlagTest.php | F-01.1 PASS ; F-01.2 PASS ; F-01.3 PASS ; F-01.4 PASS |
 | URS-F-02 | F-02.1: specs/F0-sla-foundation.md ; F-02.2..4: specs/U3-ticket-assignee.md | tests/Api/F0SlaFoundationTest.php ; tests/Api/U3TicketAssigneeTest.php | PASS |
 | URS-F-03 | specs/F0-sla-foundation.md | tests/Api/F0SlaFoundationTest.php | PASS |
-| URS-F-04 | | | |
+| URS-F-04 | specs/U4-breached-filter.md | tests/Api/U4BreachedFilterTest.php | PASS |
 | URS-F-05 | | | |
 | URS-N-01 | specs/U3-ticket-assignee.md ; specs/U2-agent-active-flag.md | tests/Api/U3TicketAssigneeTest.php ; tests/Api/U2AgentActiveFlagTest.php | PASS (sweep FX pending) |
 | URS-N-02 | specs/R1-filter-tickets-by-status.md ; specs/U1-agents-create-list.md (partial) | tests/Api/R1FilterTicketsByStatusTest.php ; tests/Api/U1AgentsCreateListTest.php | partial, FX pending |
-| URS-N-03 | specs/F0-sla-foundation.md (partial) | tests/Api/F0SlaFoundationTest.php | partial, FX pending |
+| URS-N-03 | specs/F0-sla-foundation.md ; R1 ; U3 ; U4 | tests/Api/F0SlaFoundationTest.php ; R1 ; U3 ; U4 test classes | PASS per item (sweep FX pending) |
 
 The build loop fills this table: the spec-writer records the spec path, the tester the
 test file, the orchestrator the status after the verifier's verdict.
