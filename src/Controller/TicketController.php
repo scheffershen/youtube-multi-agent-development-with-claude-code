@@ -25,9 +25,17 @@ final class TicketController extends AbstractController
     }
 
     #[Route('', name: 'ticket_list', methods: ['GET'])]
-    public function list(): JsonResponse
+    public function list(Request $request): JsonResponse
     {
-        $items = array_map(fn (Ticket $t) => $t->toArray(), $this->tickets->findAllNewestFirst());
+        // Read the raw value: InputBag::get() throws on array input (?status[]=open) and
+        // the kernel would answer with an HTML 400, which URS-N-02 forbids.
+        $status = $request->query->all()['status'] ?? null;
+
+        if (null !== $status && !\in_array($status, Ticket::STATUSES, true)) {
+            return $this->json(['error' => 'Invalid status', 'allowed' => Ticket::STATUSES], Response::HTTP_BAD_REQUEST);
+        }
+
+        $items = array_map(fn (Ticket $t) => $t->toArray(), $this->tickets->findNewestFirst($status));
 
         return $this->json(['items' => $items, 'count' => \count($items)]);
     }
