@@ -16,7 +16,7 @@ priorité et un statut, et peut être affecté à un agent.
 | `id` | entier | Identifiant attribué à la création |
 | `title` | texte (120 caractères max.) | Titre court de la demande |
 | `description` | texte | Détail de la demande |
-| `priority` | `low`, `normal`, `high` | Priorité déclarée à la création |
+| `priority` | `low`, `normal`, `high`, `urgent` | Priorité déclarée à la création |
 | `status` | `open`, `in_progress`, `closed` | Statut courant, `open` à la création |
 | `createdAt` | date ISO 8601 | Date et heure de création |
 | `dueAt` | date ISO 8601 ou `null` | Échéance de traitement, fixée à la création selon la priorité (voir [Échéance de traitement](#échéance-de-traitement)) |
@@ -35,14 +35,18 @@ augmentée d'un délai cible qui dépend de la priorité déclarée :
 | `low` | 72 heures |
 | `normal` | 24 heures |
 | `high` | 8 heures |
+| `urgent` | 2 heures |
 
-La correspondance est sensible à la casse : `LOW` n'est pas reconnu comme `low`. Seules
-ces trois valeurs sont acceptées à la création (voir [Créer un ticket](#créer-un-ticket)).
+La correspondance est sensible à la casse : `LOW` n'est pas reconnu comme `low`, ni
+`Urgent` comme `urgent`. Seules ces quatre valeurs sont acceptées à la création (voir
+[Créer un ticket](#créer-un-ticket)).
 
 **Note sur la visibilité** : les tickets créés avant l'introduction de ce contrôle avec
 une autre valeur de priorité ont reçu le délai de `normal`, soit 24 heures ; ils sont
 conservés tels quels et restent renvoyés, avec leur priorité d'origine, par la liste et
-la consultation.
+la consultation. Il en va de même des tickets de priorité `urgent` créés avant
+l'introduction du délai de 2 heures : leur échéance reste celle enregistrée à l'époque
+(24 heures après la création, ou `null` pour les plus anciens) et n'est pas recalculée.
 
 L'échéance est enregistrée une fois pour toutes à la création et n'est jamais
 recalculée. Elle est renvoyée au format ISO 8601, comme `createdAt`, et prend la même
@@ -82,7 +86,7 @@ La requête est envoyée avec l'en-tête `Content-Type: application/json`.
 |-------|------|-------------|-------------|
 | `title` | texte | oui | Titre court de la demande ; ni vide ni composé uniquement d'espaces, 120 caractères au plus |
 | `description` | texte | oui | Détail de la demande ; ni vide ni composée uniquement d'espaces |
-| `priority` | `low`, `normal` ou `high` | oui | Priorité de la demande, exactement l'une de ces trois valeurs |
+| `priority` | `low`, `normal`, `high` ou `urgent` | oui | Priorité de la demande, exactement l'une de ces quatre valeurs |
 
 Corps attendu :
 
@@ -107,7 +111,7 @@ n'est créé.
 | Code | Signification |
 |------|---------------|
 | `422` | Un ou plusieurs champs sont invalides. La réponse est `{ "errors": { "<champ>": "<message>" } }` : une clé par champ fautif (`title`, `description` ou `priority`), et uniquement ces champs-là. Un corps `{}` renvoie ainsi les trois clés |
-| `422` | `priority` manquant, `null`, d'un autre type que texte (par exemple `123`), vide, ou hors de la liste `low`, `normal`, `high`. La comparaison respecte la casse : `High` et `LOW` sont refusés, de même que `urgent`. La clé `priority` est la seule clé de `errors` si les autres champs sont valides |
+| `422` | `priority` manquant, `null`, d'un autre type que texte (par exemple `123`), vide, ou hors de la liste `low`, `normal`, `high`, `urgent`. La comparaison respecte la casse : `High`, `LOW`, `Urgent` et `URGENT` sont refusés, de même que `critical`. La clé `priority` est la seule clé de `errors` si les autres champs sont valides |
 | `422` | `title` manquant, `null`, d'un autre type que texte, vide, composé uniquement d'espaces ou de plus de 120 caractères ; la clé `title` figure dans `errors` |
 | `422` | `description` manquante, `null`, d'un autre type que texte, vide ou composée uniquement d'espaces ; la clé `description` figure dans `errors` |
 | `400` | Le corps n'est pas du JSON valide ou est vide ; la réponse est `{ "error": "<message>" }` |

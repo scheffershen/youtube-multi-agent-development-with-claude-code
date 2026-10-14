@@ -41,7 +41,8 @@ Réponse `200` :
   "priorities": [
     { "priority": "low", "total": 0, "breached": 0, "breach_rate": 0.0 },
     { "priority": "normal", "total": 3, "breached": 1, "breach_rate": 33.3 },
-    { "priority": "high", "total": 1, "breached": 1, "breach_rate": 100.0 }
+    { "priority": "high", "total": 1, "breached": 1, "breach_rate": 100.0 },
+    { "priority": "urgent", "total": 0, "breached": 0, "breach_rate": 0.0 }
   ]
 }
 ```
@@ -51,7 +52,7 @@ La réponse contient exactement ces deux champs, dans cet ordre :
 | Champ | Type | Description |
 |-------|------|-------------|
 | `generatedAt` | date ISO 8601 | Instant auquel le rapport a été évalué, au même format que `createdAt` et `dueAt` d'un ticket |
-| `priorities` | liste | Une entrée par priorité, dans l'ordre `low`, `normal`, `high`, suivie le cas échéant d'une entrée `other` (voir [Priorités inconnues](#priorités-inconnues)) |
+| `priorities` | liste | Une entrée par priorité, dans l'ordre `low`, `normal`, `high`, `urgent`, suivie le cas échéant d'une entrée `other` (voir [Priorités inconnues](#priorités-inconnues)) |
 
 Chaque entrée de `priorities` contient exactement ces quatre champs, dans cet ordre :
 
@@ -85,18 +86,24 @@ donne `100.0`. Il est toujours renvoyé comme un nombre JSON avec une partie dé
 
 Une priorité sans aucun ticket est tout de même listée, avec l'entrée
 `{ "priority": "<p>", "total": 0, "breached": 0, "breach_rate": 0.0 }` ; aucune division
-n'est effectuée dans ce cas. Sans aucun ticket, la réponse est `200` avec les trois
-entrées `low`, `normal` et `high` à zéro ; `priorities` contient alors exactement trois
-éléments et aucune valeur n'est `null`.
+n'est effectuée dans ce cas. Sans aucun ticket, la réponse est `200` avec les quatre
+entrées `low`, `normal`, `high` et `urgent` à zéro ; `priorities` contient alors
+exactement quatre éléments et aucune valeur n'est `null`.
 
 ### Priorités inconnues
 
-Les tickets dont la priorité n'est pas `low`, `normal` ou `high` ne sont pas ignorés : ils
-sont regroupés, quelle que soit leur valeur de priorité, dans une entrée supplémentaire
-`{ "priority": "other", "total": n, "breached": m, "breach_rate": r }`, calculée selon les
-mêmes règles et placée après les priorités connues ; elle est donc toujours la dernière
-de la liste. Cette entrée n'apparaît que lorsque son `total` est d'au moins `1` : si tous
-les tickets ont une priorité connue, `priorities` contient exactement trois éléments.
+Les tickets dont la priorité n'est pas `low`, `normal`, `high` ou `urgent` ne sont pas
+ignorés : ils sont regroupés, quelle que soit leur valeur de priorité, dans une entrée
+supplémentaire `{ "priority": "other", "total": n, "breached": m, "breach_rate": r }`,
+calculée selon les mêmes règles et placée après les priorités connues ; elle est donc
+toujours la dernière de la liste. Cette entrée n'apparaît que lorsque son `total` est
+d'au moins `1` : si tous les tickets ont une priorité connue, `priorities` contient
+exactement quatre éléments.
+
+**Note sur la visibilité** : les tickets de priorité `urgent` créés avant que cette
+priorité ne soit acceptée à la création sont comptés dans l'entrée `urgent`, et non dans
+`other`. Ceux qui n'ont pas d'échéance (`dueAt` à `null`) comptent dans `total` mais
+jamais dans `breached`.
 
 La somme des `total` est ainsi toujours égale au nombre de tickets, et la somme des
 `breached` est égale au `count` de `GET /api/tickets?breached=true` pris au même instant.
