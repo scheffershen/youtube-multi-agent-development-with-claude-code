@@ -12,3 +12,4 @@
 **Recommendation:** A - the URS does not define `urgent`; adding it with a guessed target would be exactly the kind of decision this protocol forbids.
 **Work so far:** FX committed in 51f343d; documented in docs/user/tickets.md; mentioned in flash info 0.3.0 as a change for API users.
 **Decision:**
+A by Yi Shen on 2026-10-14 (chat, Claude Code Desktop) - ratified as recommended

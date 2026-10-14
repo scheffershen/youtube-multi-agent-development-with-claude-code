@@ -11,3 +11,4 @@
 **Recommendation:** A - the dependency is what the spec's own required behaviour needs; verifier judged it necessary, not drift.
 **Work so far:** committed in b78d25e; recorded in reports/items/U1/verdict-1.json as "orchestrator_decision".
 **Decision:**
+A by Yi Shen on 2026-10-14 (chat, Claude Code Desktop) - ratified as recommended
