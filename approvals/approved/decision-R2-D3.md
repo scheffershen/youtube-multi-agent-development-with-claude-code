@@ -12,3 +12,4 @@
 **Recommendation:** A (both roles) - the extra failures are the direct consequence of D2 and URS-F-05.2; the spec under-counted the hard-coded "three rows" assertions.
 **Work so far:** developer: Ticket::PRIORITIES and SLA_TARGET_HOURS updated, nothing else in src/, no migration; simulator 200:6 201:3 404:1 422:2, no 5xx. Tester: tests/Api/R2UrgentPriorityTest.php (9 methods) and the four listed amendments done; suite 126 tests, 4 failures, all the U5 three-row assertions.
 **Decision:**
+A by Yi Shen on 2026-10-14 (chat, Claude Code Desktop) - amend the four U5 three-row assertions
