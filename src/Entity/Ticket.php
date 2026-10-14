@@ -13,6 +13,8 @@ class Ticket
 {
     public const array PRIORITIES = ['low', 'normal', 'high'];
     public const array STATUSES = ['open', 'in_progress', 'closed'];
+    public const array SLA_TARGET_HOURS = ['low' => 72, 'normal' => 24, 'high' => 8];
+    public const string SLA_DEFAULT_PRIORITY = 'normal';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -34,12 +36,25 @@ class Ticket
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
-    public function __construct(string $title, string $description, string $priority)
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $dueAt = null;
+
+    #[ORM\ManyToOne(targetEntity: Agent::class)]
+    #[ORM\JoinColumn(name: 'assignee_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Agent $assignee = null;
+
+    public function __construct(string $title, string $description, string $priority, ?\DateTimeImmutable $createdAt = null, ?\DateTimeImmutable $dueAt = null)
     {
         $this->title = $title;
         $this->description = $description;
         $this->priority = $priority;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = $createdAt ?? new \DateTimeImmutable();
+        $this->dueAt = $dueAt ?? $this->createdAt->modify(sprintf('+%d hours', self::slaTargetHours($priority)));
+    }
+
+    public static function slaTargetHours(string $priority): int
+    {
+        return self::SLA_TARGET_HOURS[$priority] ?? self::SLA_TARGET_HOURS[self::SLA_DEFAULT_PRIORITY];
     }
 
     public function getId(): ?int
@@ -77,6 +92,21 @@ class Ticket
         return $this->createdAt;
     }
 
+    public function getDueAt(): ?\DateTimeImmutable
+    {
+        return $this->dueAt;
+    }
+
+    public function getAssignee(): ?Agent
+    {
+        return $this->assignee;
+    }
+
+    public function setAssignee(?Agent $assignee): void
+    {
+        $this->assignee = $assignee;
+    }
+
     /** @return array<string, mixed> */
     public function toArray(): array
     {
@@ -87,6 +117,8 @@ class Ticket
             'priority' => $this->priority,
             'status' => $this->status,
             'createdAt' => $this->createdAt->format(DATE_ATOM),
+            'dueAt' => $this->dueAt?->format(DATE_ATOM),
+            'assignee' => null,
         ];
     }
 }

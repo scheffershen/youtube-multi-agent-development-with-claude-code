@@ -1,0 +1,19 @@
+{
+  "urs": "docs/urs/URS-002-sla-module.md",
+  "generated_by": "urs-decomposer, 2026-10-14",
+  "items": [
+    {"id": "F0", "kind": "foundation", "title": "Agent entity, Ticket assignee relation and stored due time, SLA target constants, migration, ApiTestCase", "evidence": ["URS-F-01.1", "URS-F-02.1", "URS-F-03.1", "URS-F-03.2", "URS-F-03.3", "URS-F-03.4"], "constraints": ["URS-N-03"], "depends_on": [], "priority": 1},
+    {"id": "U1", "kind": "feature", "title": "POST /api/agents (create, unique email) and GET /api/agents (list, active first)", "evidence": ["URS-F-01.2", "URS-F-01.3"], "constraints": ["URS-N-02"], "depends_on": ["F0"], "priority": 2},
+    {"id": "U2", "kind": "feature", "title": "PATCH /api/agents/{id} to change the active flag", "evidence": ["URS-F-01.4"], "constraints": ["URS-N-01", "URS-N-02"], "depends_on": ["F0", "U1"], "priority": 3},
+    {"id": "U3", "kind": "feature", "title": "PATCH /api/tickets/{id}/assignee: assign, unassign, assignee object in all ticket JSON", "evidence": ["URS-F-02.2", "URS-F-02.3", "URS-F-02.4"], "constraints": ["URS-N-01", "URS-N-02", "URS-N-03"], "depends_on": ["F0"], "priority": 4},
+    {"id": "U4", "kind": "feature", "title": "GET /api/tickets?breached=true|false filter, combinable with status filter", "evidence": ["URS-F-04.1", "URS-F-04.2", "URS-F-04.3"], "constraints": ["URS-N-02", "URS-N-03"], "depends_on": ["F0"], "priority": 5},
+    {"id": "U5", "kind": "feature", "title": "GET /api/reports/sla per-priority totals, breached counts and breach rate", "evidence": ["URS-F-05.1", "URS-F-05.2", "URS-F-05.3"], "constraints": ["URS-N-02"], "depends_on": ["F0", "U4"], "priority": 6},
+    {"id": "FX", "kind": "acceptance", "title": "URS-N acceptance sweep: audit log entries, JSON errors with no 500, backward compatibility, traffic replay", "evidence": [], "constraints": ["URS-N-01", "URS-N-02", "URS-N-03"], "depends_on": ["F0", "U1", "U2", "U3", "U4", "U5"], "priority": 7}
+  ],
+  "unmapped_requirements": [],
+  "notes": [
+    "U4: no status filter exists yet (open request 001); build the breach predicate so it composes with one.",
+    "F0/U5: open request 002 (urgent priority) would take the normal SLA target by URS-F-03.2.",
+    "FX: existing ticket endpoints violate URS-N-02 (three planted 500s); the sweep must drive them to JSON errors."
+  ]
+}
