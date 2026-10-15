@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Dto\CreateTicketRequest;
 use App\Entity\Ticket;
 use App\Repository\TicketRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/tickets')]
@@ -33,11 +35,9 @@ final class TicketController extends AbstractController
     }
 
     #[Route('', name: 'ticket_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    public function create(#[MapRequestPayload(mapWhenEmpty: true)] CreateTicketRequest $payload): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
-
-        $ticket = new Ticket($data['title'], $data['description'], $data['priority']);
+        $ticket = new Ticket((string) $payload->title, (string) $payload->description, (string) $payload->priority);
         $this->em->persist($ticket);
         $this->em->flush();
 
