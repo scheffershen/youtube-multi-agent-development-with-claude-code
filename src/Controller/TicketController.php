@@ -50,6 +50,9 @@ final class TicketController extends AbstractController
     public function show(int $id): JsonResponse
     {
         $ticket = $this->tickets->find($id);
+        if (null === $ticket) {
+            return $this->json(['error' => 'Ticket not found'], Response::HTTP_NOT_FOUND);
+        }
 
         return $this->json($ticket->toArray());
     }

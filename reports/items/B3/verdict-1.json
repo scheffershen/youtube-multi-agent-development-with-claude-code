@@ -1,0 +1,8 @@
+{
+  "spec": "specs/B3-show-ticket-not-found.md",
+  "verdict": "PASS",
+  "suite": "OK (21 tests, 127 assertions)",
+  "failures": [],
+  "remaining_criticals_out_of_scope": [],
+  "notes": "AC1-AC5 are covered by tests/Api/B3ShowTicketNotFoundTest.php: testAc1UnknownIdReturns404, testAc2UnknownIdReturnsJsonErrorBody, testAc3ExistingTicketReturns200WithShape, testAc4UnknownIdNextToExistingDataReturns404 and testAc5PatchUnknownIdStillReturns404. AC6: testCreateAndListTicket, testChangeStatus and testStatsWithTickets in tests/Api/TicketApiTest.php are unchanged (git shows no changes to tracked tests) and pass. The diff is 3 added lines in src/Controller/TicketController.php show(): a null check that returns $this->json(['error' => 'Ticket not found'], 404). This matches changeStatus, stays inside scope and adds no dependency, schema change or listener. Traffic replay used the isolated var/data_verify_B3.db, which I deleted afterwards. GET /api/tickets/9999 now gives 404. The log had 180 lines before the replay, and the lines added after it contain no CRITICAL or error entries. Style notes: the new test class repeats setUp/body()/postJson() instead of reusing helpers from TicketApiTest, which is fine. Nothing tests requirement 4 ('does not write to the database') directly, and the spec has no AC for it, so it is not a failure."
+}
