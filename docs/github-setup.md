@@ -6,13 +6,11 @@ Nothing below is run by the loop.
 
 ## 1. Create the repositories
 
-`ticketflow` is public, `ticketflow-tutorial` is private. Replace `<owner>` with your
-GitHub user or organisation.
-
-```bash
-cd D:\Sandbox\yt-30-10-2026\ticketflow
-gh repo create <owner>/ticketflow --public --source=. --remote=origin --description "Symfony multi-agent playground: ten Claude Code roles, human gates, evidence-based releases"
-```
+`ticketflow` is public at
+`https://github.com/scheffershen/youtube-multi-agent-development-with-claude-code`
+(created empty on GitHub and added as `origin` locally on 2026-10-15, so step 1 is only
+needed for the tutorial repository); `ticketflow-tutorial` is private. Replace `<owner>`
+with your GitHub user or organisation where it still appears.
 
 ```bash
 cd D:\Sandbox\yt-30-10-2026\ticketflow-tutorial
