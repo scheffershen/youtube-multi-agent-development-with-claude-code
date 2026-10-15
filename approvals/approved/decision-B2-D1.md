@@ -11,4 +11,4 @@
 
 **Recommendation:** A - it reuses the 422 already in the codebase and keeps F1 simple. In F1, "missing" and "unknown" can both be 422 on the same `errors.priority` key.
 **Work so far:** I read `TicketController.php`, `Ticket.php` (`PRIORITIES` = low, normal, high), `TicketApiTest.php` and `requests/002-urgent-priority.md`. The crash is at TicketController.php:40, where `$data['priority']` is read without a check. `title` and `description` have the same unchecked access on lines 38 to 40. Whether B2 should also cover them is a second scope question. The spec skeleton is ready. It needs the status code and shape from D1, an acceptance criterion that no ticket is persisted on error, and an out-of-scope note that no new priority values are added (F1). I have not written the spec file.
-**Decision:**
+**Decision:** A by Shen on 2026-10-15 (chat) - 422 with errors.priority, nothing stored
