@@ -8,3 +8,5 @@ is given but not one of the known statuses, I would rather get a 400 with a mess
 an empty list, so I notice my typo.
 **Why it matters:** The support dashboard polls this endpoint every 30 seconds and we are
 paging through hundreds of closed tickets to find the open ones.
+
+Resolved in round 2, commit 4238f25
