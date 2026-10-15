@@ -49,6 +49,8 @@ jobs:
           python-version: "3.12"
       - name: human-gate hook executable checks
         run: python .claude/hooks/test_human_gate.py
+      - name: record_baseline.py parses PHPUnit output
+        run: python -I .claude/scripts/record_baseline.py --selftest
 
   container:
     name: image builds and suite passes inside it

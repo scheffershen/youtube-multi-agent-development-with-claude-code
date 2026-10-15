@@ -2,6 +2,7 @@
 # TicketFlow is a JSON API with no anonymous HTML pages, so the probes are the list
 # endpoints and the error paths. The traffic simulator (app:simulate-traffic) remains the
 # main replay; this file exists so the smoke script is exercised in CI and by the tutorial.
+# Paths are literal: an application with a /{_locale} prefix needs it in every probe.
 200 GET /api/tickets
 200 GET /api/stats
 200 GET /api/agents

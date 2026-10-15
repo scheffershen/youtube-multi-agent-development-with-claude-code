@@ -64,6 +64,11 @@ schema in PHP). Avoid `doctrine:schema:drop --force`: the permission classifier 
 `001`, `002`, `003` as ids. No legacy inbox file. Shipped requests move to
 `requests/done/`, which the analyst treats as closed.
 
+## Never add
+
+Nothing here: no person's work in progress sits in this tree. Agents still add explicit
+paths only (`git add -- src tests ...`); `git add -A` is denied in `.claude/settings.json`.
+
 ## Untracked by policy
 
 Nothing: every agent-loop folder is tracked here, so a dirty tree is a real precondition
@@ -141,6 +146,14 @@ agent decisions (`decision-<item>-D<n>.md`), blocked items, releases not fully v
 `.claude/settings.json` and refused by `.claude/hooks/human-gate.py`; on that message,
 write the request to `approvals/pending/` and stop. Under `/loop` pass `--unattended` so
 gates use push notifications instead of chat questions.
+
+## Recorded red baseline
+
+Not used here: the suite is green on every branch. On a repository whose suite is red
+before any agent touches it, a person may record the state with
+`python -I .claude/scripts/record_baseline.py <phpunit output> N` and cite
+`reports/baseline-round-N.md` in the approved round file; the verifier then passes an
+item only if every failing test is in that list. See the starter kit's `CLAUDE.md`.
 
 ## The improvement loop
 

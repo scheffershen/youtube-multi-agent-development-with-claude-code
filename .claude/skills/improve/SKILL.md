@@ -22,7 +22,13 @@ not track them yet) never count as a dirty tree; any other uncommitted file does
 person decides what to do with it before a real round.
 
 - Confirm `tools/php vendor/bin/phpunit` passes on the current tree. If it does not,
-  stop and report; a red baseline makes verification meaningless.
+  stop and report; a red baseline makes verification meaningless. **Exception, only when
+  a person approved it:** if `reports/baseline-round-N.md` exists (written with
+  `python -I .claude/scripts/record_baseline.py <phpunit output> N` and accepted in the
+  approved round file), the suite may be red exactly as that file records it. Run the
+  suite once, compare the failing tests with the recorded list, stop if a test outside
+  the list fails, and pass the baseline path to the verifier and the recorder with every
+  item.
 - `git status --porcelain` must be clean. If not, stop and ask the user whether to commit
   or stash. (Under `/loop` with no user available: skip the round and report.)
 - Create `reports/` and `specs/` if missing. The round number `N` is
@@ -41,7 +47,7 @@ Any agent may return a `DECISION NEEDED` block instead of its report (protocol i
 `CLAUDE.md`). When one does:
 
 1. Write `approvals/pending/decision-<item>-D<n>.md`: the block verbatim, plus
-   `**Decision:**` left blank. Commit it as `gate: decision-<item>-D<n>`.
+   `**Decision:**` left blank. Commit it as `gate: decision-<item>-D<n>` (`git add -- approvals`).
 2. Attended: ask the person with a single question whose options are exactly the
    agent's A/B/C options (the recommendation first, marked as such), plus "other" for
    free text. Unattended: push notification naming the file, mark the item WAITING in
@@ -158,7 +164,15 @@ Unattended: push notification and continue with the next independent item.
 
 On PASS:
 
-- `git add -A && git commit -m "<item id>: <title>"` with the standard attribution
+- If the round runs on a recorded red baseline and the verdict reports baseline changes
+  (listed tests that now pass, or that fail for a new reason), that is a decision for a
+  person (Step D): on acceptance, write `reports/baseline-round-N+1.md` from the
+  verifier's suite output with `record_baseline.py` and leave round N's file unchanged.
+
+- `git add -- src tests migrations specs reports requests release approvals` (explicit
+  paths, never `git add -A`: paths listed under "Never add" in `CLAUDE.md` are a person's
+  work in progress and must stay out of every agent commit), then
+  `git commit -m "<item id>: <title>"` with the standard attribution
   trailer.
 - If the item cited a file in `requests/`, move that file to `requests/done/` and append
   a line `Resolved in round N, commit <sha>` to it. Commit that too.
