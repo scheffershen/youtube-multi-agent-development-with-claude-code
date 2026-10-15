@@ -59,5 +59,7 @@ Then, in Claude Code Desktop opened on this folder (new session so the roles reg
 ```
 
 PHP lives at `C:\php\php-8.4.5-nts-Win32-vs17-x64`. Edit `tools/php.cmd`, `tools/php`
-and `tools/php.ini` if yours is elsewhere. `vendor/` is not committed: run
-`tools/composer install` after cloning.
+and `tools/php.ini` if yours is elsewhere. Composer is not committed: download
+`composer.phar` from https://getcomposer.org/download/ into `tools/` (the wrappers expect
+`tools/composer.phar`), then run `tools/composer install`; `vendor/` is not committed
+either. On Linux or in the container, system `composer` works as usual.
