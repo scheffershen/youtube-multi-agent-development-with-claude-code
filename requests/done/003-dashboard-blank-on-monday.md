@@ -5,3 +5,5 @@
 red "An error occurred" box until the first new ticket arrives. I think the stats call
 is failing.
 **Expected:** With zero tickets the stats should just show zeros.
+
+Resolved in round 1, commit 11141a5
