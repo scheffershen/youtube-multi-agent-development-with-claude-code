@@ -11,4 +11,4 @@
 
 **Recommendation:** B - the sum always equals total, so stats never silently drop rows, which is the failure this request is about. Choose A for a strict four-key shape.
 **Work so far:** D1=A and D2=B applied; the spec outline is final except for this point. An AC for the out-of-list case will insert a row through the EntityManager, since the API now rejects such values.
-**Decision:**
+**Decision:** B by Shen on 2026-10-15 (chat) - by_priority always has a fifth key 'other'; the five keys sum to total
