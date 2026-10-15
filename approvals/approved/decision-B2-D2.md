@@ -11,4 +11,4 @@
 
 **Recommendation:** B - it is the same bug (an unchecked array key at line 40), the fix is the same mechanism, and a half-fixed endpoint would leave two known 500s.
 **Work so far:** D1=A is recorded. A missing `priority` returns 422 with `{"errors":{"priority":"..."}}` and nothing is persisted. I have read all the relevant code (TicketController.php, Ticket.php, TicketApiTest.php, requests/002-urgent-priority.md). The spec file has not been written; it will be written as soon as D2 is answered.
-**Decision:**
+**Decision:** B by Shen on 2026-10-15 (chat) - validate title, description and priority; 422 per field, all failures in one response
