@@ -26,4 +26,25 @@ class TicketRepository extends ServiceEntityRepository
     {
         return $this->count(['status' => $status]);
     }
+
+    /**
+     * Number of tickets per stored priority value, in one GROUP BY query.
+     *
+     * @return array<string, int>
+     */
+    public function countGroupedByPriority(): array
+    {
+        $rows = $this->createQueryBuilder('t')
+            ->select('t.priority AS priority', 'COUNT(t.id) AS n')
+            ->groupBy('t.priority')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['priority']] = (int) $row['n'];
+        }
+
+        return $counts;
+    }
 }

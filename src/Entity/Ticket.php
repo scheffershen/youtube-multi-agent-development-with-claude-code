@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'ticket')]
 class Ticket
 {
-    public const array PRIORITIES = ['low', 'normal', 'high'];
+    public const array PRIORITIES = ['low', 'normal', 'high', 'urgent'];
     public const array STATUSES = ['open', 'in_progress', 'closed'];
 
     #[ORM\Id]
