@@ -12,4 +12,4 @@
 
 **Recommendation:** A - 'urgent' is the only known out-of-list value, and the new list makes those rows valid with no change. Rewriting or deleting data would need a stronger reason.
 **Work so far:** Read Ticket.php, CreateTicketRequest.php, TicketController.php, TicketStats.php, TicketApiTest.php, requests/002-urgent-priority.md, decision-B2-D1.md. Plan: add `#[Assert\Choice(choices: Ticket::PRIORITIES)]` to CreateTicketRequest::priority, 422 `{"errors":{"priority":"..."}}` per B2-D1=A, nothing stored on error. A second question (D2) on ranking, stats breakdown and filters follows once D1 is answered.
-**Decision:**
+**Decision:** A by Shen on 2026-10-15 (chat) - leave existing rows untouched, no migration; validate new writes only
