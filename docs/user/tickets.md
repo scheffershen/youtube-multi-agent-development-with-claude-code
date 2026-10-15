@@ -16,7 +16,7 @@ priorité et un statut.
 | `id` | entier | Identifiant attribué à la création |
 | `title` | texte (120 caractères max.) | Titre court de la demande |
 | `description` | texte | Détail de la demande |
-| `priority` | `low`, `normal`, `high` | Priorité déclarée à la création |
+| `priority` | `low`, `normal`, `high`, `urgent` | Priorité déclarée à la création ; `urgent` est la plus haute, dans l'ordre `low`, `normal`, `high`, `urgent` |
 | `status` | `open`, `in_progress`, `closed` | Statut courant, `open` à la création |
 | `createdAt` | date ISO 8601 | Date et heure de création |
 
@@ -40,8 +40,12 @@ Réponse `201` avec le ticket créé : `id`, `title`, `description`, `priority`,
 
 | Code | Signification |
 |------|---------------|
-| `422` | Un ou plusieurs champs obligatoires sont manquants ; aucun ticket n'est créé |
+| `422` | Un ou plusieurs champs obligatoires sont manquants, ou `priority` n'est pas l'une des quatre valeurs acceptées ; aucun ticket n'est créé |
+| `4xx` | `priority` n'est pas une chaîne de caractères (par exemple `5`) ; la réponse est au format JSON, aucun ticket n'est créé |
 
+Les valeurs acceptées pour `priority` sont `low`, `normal`, `high` et `urgent`. La
+comparaison est exacte et sensible à la casse : `HIGH` est refusé. Une priorité refusée
+est signalée par la clé `priority` de l'objet `errors`.
 La réponse `422` a la forme suivante : `errors` est un objet qui associe le nom de
 chaque champ en erreur à un message.
 
@@ -58,6 +62,10 @@ champ valide n'apparaît pas dans `errors`.
 `GET /api/tickets`
 
 Renvoie `{ "items": [...], "count": n }`, du plus récent au plus ancien.
+
+Les tickets existants dont la priorité n'est pas l'une des quatre valeurs acceptées ne
+sont ni modifiés ni supprimés : ils restent renvoyés tels quels, ici comme à la
+consultation d'un ticket.
 
 ## Consulter un ticket
 
