@@ -16,10 +16,16 @@ class TicketRepository extends ServiceEntityRepository
         parent::__construct($registry, Ticket::class);
     }
 
-    /** @return list<Ticket> */
-    public function findAllNewestFirst(): array
+    /**
+     * All tickets, newest first; only those with the given status when $status is not null.
+     *
+     * @return list<Ticket>
+     */
+    public function findAllNewestFirst(?string $status = null): array
     {
-        return $this->findBy([], ['createdAt' => 'DESC', 'id' => 'DESC']);
+        $criteria = null === $status ? [] : ['status' => $status];
+
+        return $this->findBy($criteria, ['createdAt' => 'DESC', 'id' => 'DESC']);
     }
 
     public function countByStatus(string $status): int

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\CreateTicketRequest;
+use App\Dto\ListTicketsQuery;
 use App\Entity\Ticket;
 use App\Repository\TicketRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -27,9 +29,10 @@ final class TicketController extends AbstractController
     }
 
     #[Route('', name: 'ticket_list', methods: ['GET'])]
-    public function list(): JsonResponse
-    {
-        $items = array_map(fn (Ticket $t) => $t->toArray(), $this->tickets->findAllNewestFirst());
+    public function list(
+        #[MapQueryString(validationFailedStatusCode: Response::HTTP_BAD_REQUEST)] ListTicketsQuery $query = new ListTicketsQuery(),
+    ): JsonResponse {
+        $items = array_map(fn (Ticket $t) => $t->toArray(), $this->tickets->findAllNewestFirst($query->status));
 
         return $this->json(['items' => $items, 'count' => \count($items)]);
     }
