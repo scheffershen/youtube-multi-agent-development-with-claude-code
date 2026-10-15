@@ -86,7 +86,7 @@ const FRAG_REPORT = { type: 'object', required: ['fragment', 'section'], propert
 phase('Baseline')
 const base = await agent(
   `You are the orchestrator's preflight for TicketFlow (read CLAUDE.md). Do exactly this and return JSON:
-1. git status --porcelain must be empty (tree = "clean"); otherwise ok=false, reason.
+1. git status --porcelain must be empty apart from the paths listed under "Untracked by policy" in CLAUDE.md (tree = "clean"); otherwise ok=false, reason.
 2. tools/php vendor/bin/phpunit must end with OK; put the summary line in suite; otherwise ok=false.
 3. round = 1 + number of files matching reports/round-*.md.
 4. If approvals/approved/improve-round-<round>.md exists and reports/round-<round>.md does not: parse its table into approvedItems (id, kind, title, evidence, observed, expected, priority; observed/expected may be copied from the title when absent) and set pendingApproval=false.

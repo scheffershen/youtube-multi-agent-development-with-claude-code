@@ -33,10 +33,12 @@ Before writing, replay:
 
 1. `tools/php vendor/bin/phpunit` on the release commit. Keep the full summary line and
    the list of failing tests, if any.
-2. `DATABASE_URL="sqlite:///%kernel.project_dir%/var/data_validate_<version>.db" tools/php bin/console app:simulate-traffic --reset`
+2. The replay named in the Toolchain table of `CLAUDE.md`: with a simulator,
+   `DATABASE_URL="sqlite:///%kernel.project_dir%/var/data_validate_<version>.db" tools/php bin/console app:simulate-traffic --reset`
    (PowerShell: set `$env:DATABASE_URL` first), so the shared dev database is never
-   emptied by a dossier run; delete that file afterwards. Keep the HTTP status counts and
-   any `CRITICAL` lines appended to the log during your run.
+   emptied by a dossier run; delete that file afterwards. Without one,
+   `bash .claude/scripts/smoke.sh` against the running server. Keep the HTTP status
+   counts (or the probe lines) and any `CRITICAL` appended to the log during your run.
 3. `tools/php bin/console doctrine:migrations:migrate -n` on a fresh database when the
    range contains a migration. Keep the output.
 

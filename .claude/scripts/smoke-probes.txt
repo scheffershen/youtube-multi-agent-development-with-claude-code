@@ -1,0 +1,11 @@
+# Read-only probes for .claude/scripts/smoke.sh:  <expected status> <METHOD> <path> [curl args]
+# TicketFlow is a JSON API with no anonymous HTML pages, so the probes are the list
+# endpoints and the error paths. The traffic simulator (app:simulate-traffic) remains the
+# main replay; this file exists so the smoke script is exercised in CI and by the tutorial.
+200 GET /api/tickets
+200 GET /api/stats
+200 GET /api/agents
+200 GET /api/reports/sla
+404 GET /api/tickets/999999 -H Accept:application/json
+404 GET /api/smoke-does-not-exist-$$ -H Accept:application/json
+404 GET /smoke-does-not-exist-$$
