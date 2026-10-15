@@ -1,0 +1,54 @@
+name: ci
+
+on:
+  push:
+    branches: [main, "build/**", "demo/**", "demo-*"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  suite:
+    name: suite, traffic replay, hook checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: intl, mbstring, pdo_sqlite, sqlite3, zip
+          coverage: none
+
+      - name: composer install
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: migrations apply on an empty database (dev and test)
+        run: |
+          php bin/console doctrine:migrations:migrate -n -q
+          php bin/console doctrine:migrations:migrate -n -q --env=test
+
+      - name: phpunit
+        run: php vendor/bin/phpunit
+
+      - name: standard traffic replay produces no 5xx and no CRITICAL
+        run: |
+          : > var/log/dev.log
+          php bin/console app:simulate-traffic --reset | tee traffic.txt
+          if grep -qE '^HTTP 5[0-9]{2}' traffic.txt; then echo "5xx under standard traffic"; exit 1; fi
+          if grep -q CRITICAL var/log/dev.log; then echo "CRITICAL lines written"; grep CRITICAL var/log/dev.log | cut -c1-200; exit 1; fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: human-gate hook executable checks
+        run: python .claude/hooks/test_human_gate.py
+
+  container:
+    name: image builds and suite passes inside it
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build
+        run: docker compose build
+      - name: suite in the container
+        run: docker compose run --rm app test
