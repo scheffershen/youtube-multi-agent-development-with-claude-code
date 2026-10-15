@@ -41,7 +41,7 @@ force pushes, no deletions, and applies to administrators too.
 
 ```bash
 cd D:\Sandbox\yt-30-10-2026\ticketflow
-gh api -X PUT repos/<owner>/ticketflow/branches/main/protection --input docs/github/branch-protection.json
+gh api -X PUT repos/scheffershen/youtube-multi-agent-development-with-claude-code/branches/main/protection --input docs/github/branch-protection.json
 ```
 
 After this, `main` moves only by pull request. The PR template asks the reviewer to
