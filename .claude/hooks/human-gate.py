@@ -25,7 +25,9 @@ GIT = rf"\bgit\b(?:\s+{GIT_GLOBAL_OPT})*\s+"
 GATED = [
     # `merge(?!-)` gates the merge command only: merge-tree, merge-base and merge-file are
     # read-only helpers an orchestrator needs to predict conflicts before a human merges.
-    (re.compile(GIT + r"(push|tag|merge(?!-)|reset\s+--hard|branch\s+-[dD]|update-ref)\b"),
+    # `tag` is gated only when it creates or deletes: bare `git tag`, `-l`, `--list`,
+    # `--contains`, `--points-at` and `-n` are listings an orchestrator needs.
+    (re.compile(GIT + r"(push|tag(?!\s*(?:$|-l\b|--list\b|--contains\b|--points-at\b|-n\d*\b))|merge(?!-)|reset\s+--hard|branch\s+-[dD]|update-ref)\b"),
      "git tag/merge/push/reset --hard/branch -d/update-ref"),
     (re.compile(r"\bgh\s+(pr\s+merge|release\s+create|repo\s+delete)\b"), "GitHub merge/release/delete"),
     (re.compile(r"\b(rsync|scp|sftp|kubectl\s+(apply|rollout|delete)|helm\s+(install|upgrade)|"

@@ -8,6 +8,14 @@ yourself except the mechanical changelog merge. Arguments: `$ARGUMENTS` must con
 version (`0.2.0`). Options: `--date YYYY-MM-DD` (default today), `--previous X.Y.Z`
 (default: the last `### Version` heading in the changelog), `--skip-dossier`.
 
+The commit range for the recorder is `v<previous>..HEAD` when that tag exists
+(`git rev-parse -q --verify v<previous>` says so; listing tags is allowed, creating is
+not). Without the tag, use the commit that added the previous version block to the
+changelog (`git log -1 --format=%H -S "### Version <previous>" -- <changelog path>`).
+Before step 1, check that `<version>` is not already a tag or a changelog heading on any
+branch (`git tag -l v<version>`, `git grep -l "### Version <version>" --all`): on a demo or
+feature branch that re-runs history, pick the next free number instead of colliding.
+
 Read the **Documentation map** in `CLAUDE.md` first; every path below comes from it.
 
 ## Step 0: Preconditions
@@ -69,6 +77,8 @@ before step 4.
   the writer one message naming the id.
 - The dossier's `CONCLUSION` and `ANOMALIES` lines go verbatim into your final report.
   You do not soften them.
+- The flash-info writer sets the previous letter's `sidebar_position` from 0 to 1 so
+  the new one sorts first. That is its role, not an unrequested edit; do not flag it.
 
 ## Step 3b: Human gate when not validated
 

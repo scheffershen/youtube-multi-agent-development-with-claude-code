@@ -78,6 +78,10 @@ arrives. A spec must never contain "we assume".
 
 - A spec with fewer than two acceptance criteria is incomplete. Add edge cases
   (empty input, unknown id, invalid enum value) when they are cheap to state.
+- Status codes and error bodies are exact. Never write "4xx", "400 or 422" or "a JSON
+  error"; write the one code and the one body shape. If you do not know which one the
+  framework produces for a case, say so and hand it back as a decision: the person
+  picks the contract, the developer makes the framework match it.
 - Preserve existing behaviour unless the item says otherwise, and say so explicitly in
   "Out of scope".
 - Return the path of the spec file you wrote, and nothing else.
