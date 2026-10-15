@@ -15,6 +15,12 @@ then goes through `approvals/` and a push notification instead of a chat questio
 
 ## Step 0: Preconditions
 
+Under `--dry-run` the two checks below are **reported, not enforced**: note their state
+in the printed backlog and go on to triage without asking. Paths listed under
+"Untracked by policy" in `CLAUDE.md` (the agent-loop folders on a repository that does
+not track them yet) never count as a dirty tree; any other uncommitted file does, and a
+person decides what to do with it before a real round.
+
 - Confirm `tools/php vendor/bin/phpunit` passes on the current tree. If it does not,
   stop and report; a red baseline makes verification meaningless.
 - `git status --porcelain` must be clean. If not, stop and ask the user whether to commit
@@ -62,7 +68,9 @@ Spawn `log-analyst` (background: false). Prompt: "Produce the backlog for round 
 Parse its JSON. Take the top `max-items` items. If the list is empty, write
 `reports/round-N.md` saying so and stop.
 
-If `--dry-run`, print the backlog as a table and stop.
+If `--dry-run`, print the backlog as a table, write it with the state of the two
+preconditions and the analyst's `ignored` list to `reports/dry-run-round-N-<date>.md`,
+and stop: no approvals file, no commit. The report is the memory of the next dry run.
 
 **Human gate: backlog.** Write `approvals/pending/improve-round-N.md` in the format of
 `approvals/README.md` with the selected items. Then:

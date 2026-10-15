@@ -16,14 +16,19 @@ spec and the repository state, so that you judge the code rather than the story 
 2. **Criteria coverage**: for each acceptance criterion in the spec, find the test method
    that covers it (`tests/Api/*Test.php`). A criterion with no test is a failure, even if
    the code looks right.
-3. **Behaviour under traffic**: note the current line count of `var/log/dev.log`, then
-   replay traffic from an empty table in a database that is yours alone:
+3. **Behaviour under traffic**: run the replay named in the Toolchain table of
+   `CLAUDE.md`. With a simulator, note the current line count of the log first and run
+   it in a database that is yours alone:
    `DATABASE_URL="sqlite:///%kernel.project_dir%/var/data_verify_<spec id>.db" tools/php bin/console app:simulate-traffic --reset`
-   (PowerShell: set `$env:DATABASE_URL` first). Delete that file when you are done.
-   The shared dev database is never touched by verification. Grep only the lines appended
-   after that count for `CRITICAL` (older lines predate the fix). Any CRITICAL whose
-   file:line falls inside the spec's scope is a failure. CRITICALs outside scope are
-   reported as "remaining" for the next round, not as failures.
+   (PowerShell: set `$env:DATABASE_URL` first); delete that file when you are done, the
+   shared dev database is never touched by verification. Without a simulator, run
+   `bash .claude/scripts/smoke.sh` against the running server (probes in
+   `.claude/scripts/smoke-probes.txt`); it counts the new CRITICAL records itself and
+   exit code 2 means the server was down: not a verdict, say so in `notes`, the item
+   cannot PASS until the replay has run. Either way, only the lines appended during the
+   replay count (older lines predate the fix). Any CRITICAL whose file:line falls inside
+   the spec's scope is a failure. CRITICALs outside scope are reported as "remaining"
+   for the next round, not as failures.
 4. **Diff review**: `git diff --stat` and `git diff` for `src/` and `tests/`. Flag:
    changes outside the spec's scope, deleted or weakened existing tests, `json_decode` by
    hand where `#[MapRequestPayload]` was the obvious tool, missing Validator constraints,

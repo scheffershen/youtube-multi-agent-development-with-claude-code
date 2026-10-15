@@ -37,6 +37,13 @@ jobs:
           if grep -qE '^HTTP 5[0-9]{2}' traffic.txt; then echo "5xx under standard traffic"; exit 1; fi
           if grep -q CRITICAL var/log/dev.log; then echo "CRITICAL lines written"; grep CRITICAL var/log/dev.log | cut -c1-200; exit 1; fi
 
+      - name: smoke script passes against the built-in server
+        run: |
+          bash -n .claude/scripts/smoke.sh
+          php -S 127.0.0.1:8000 -t public > /dev/null 2>&1 &
+          sleep 2
+          bash .claude/scripts/smoke.sh --base http://127.0.0.1:8000
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

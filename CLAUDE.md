@@ -16,7 +16,8 @@ loads sqlite, intl, mbstring, openssl.
 | Composer | `tools/composer ...` | `tools\composer.cmd ...` |
 | Tests | `tools/php vendor/bin/phpunit` | `tools\php.cmd vendor\bin\phpunit` |
 | Console | `tools/php bin/console <cmd>` | `tools\php.cmd bin\console <cmd>` |
-| Fake traffic | `tools/php bin/console app:simulate-traffic` | same |
+| Fake traffic (replay for the verifier and the recorder) | `tools/php bin/console app:simulate-traffic` | same |
+| Smoke script (alternative replay against a running server) | `bash .claude/scripts/smoke.sh --base http://127.0.0.1:8000` (probes in `.claude/scripts/smoke-probes.txt`; exit 2 = server down, not a verdict) | same, from Git Bash |
 
 Never call bare `php` or `composer`; they are not on PATH here. Inside the container
 (`docker compose exec app ...`) `php` is on PATH; the wrappers are for the host only.
@@ -29,7 +30,8 @@ schema in PHP). Avoid `doctrine:schema:drop --force`: the permission classifier 
 ## Layout
 
 - `src/` application code. `tests/Api/` HTTP-level tests (`WebTestCase`).
-- `var/log/dev.log` what the traffic simulator and real requests write. Agents read it.
+- `var/log/dev.log` what the traffic simulator and real requests write. The log-analyst
+  reads it under the Log sources rules below.
 - `requests/` human request inbox (one `.md` per request). `requests/done/` after shipping.
 - `specs/` one spec per backlog item, written by the spec-writer agent.
   `specs/templates/foundation.md` is the skeleton for a URS foundation item.
@@ -44,6 +46,29 @@ schema in PHP). Avoid `doctrine:schema:drop --force`: the permission classifier 
 - `release/unreleased/` changelog fragments awaiting a release.
 - `reports/items/<id>/` the evidence store: every agent's structured output per item.
   `.claude/workflows/improve.js` the same loop as a deterministic Workflow script.
+
+## Log sources (for the log-analyst)
+
+| Key | Value |
+|-----|-------|
+| files | `var/log/dev.log` (single file, Monolog, one record per line) |
+| channels, levels | `request` at `CRITICAL` and `ERROR`; `WARNING` only when a request points at it |
+| size cap | 5 MB; above it, `grep -c` of a known fingerprint is the only allowed operation |
+| rotated dumps | none here (one file) |
+| origin | local: the traffic simulator and the developer's own requests; counts are frequency, not user impact |
+| known noise | none planted; deprecation records are context, not findings |
+
+## Request inbox
+
+`requests/<id>-<slug>.md`, one file per request (see `requests/README.md`); the demo uses
+`001`, `002`, `003` as ids. No legacy inbox file. Shipped requests move to
+`requests/done/`, which the analyst treats as closed.
+
+## Untracked by policy
+
+Nothing: every agent-loop folder is tracked here, so a dirty tree is a real precondition
+failure. (On a repository where the kit is installed uncommitted, list its folders here;
+see the starter kit's `CLAUDE.md` template.)
 
 ## Documentation map
 
