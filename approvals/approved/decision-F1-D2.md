@@ -15,4 +15,4 @@ Current state: Ticket::PRIORITIES is ['low','normal','high'] and nothing else us
 **Recommendation:** B - covers "stats include urgent" with one additive key without inventing filter and sort contracts the request never specified. Choose D if the ranking must be visible through the API.
 **Work so far:** D1=A applied. Spec outline valid for every option: PRIORITIES order, `#[Assert\Choice]` + NotBlank on CreateTicketRequest::priority, urgent -> 201, 'critical' / 'HIGH' / 5 -> 422 with nothing stored, missing/blank as in B2. Out of scope: changeStatus, existing rows, SimulateTrafficCommand, the entity column.
 **Orchestrator note:** F2 (status filter on GET /api/tickets, request 001) is still open for a later round. Options C and D add query parameters to the same endpoint, so they would set the convention F2 follows.
-**Decision:**
+**Decision:** B by Shen on 2026-10-15 (chat) - validation plus by_priority in /api/stats; no filter, no sort
