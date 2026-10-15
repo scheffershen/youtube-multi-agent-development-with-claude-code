@@ -63,7 +63,21 @@ Renvoie `{ "items": [...], "count": n }`, du plus récent au plus ancien.
 
 `GET /api/tickets/{id}`
 
-Renvoie le ticket demandé.
+Renvoie le ticket demandé avec la réponse `200` : `id`, `title`, `description`,
+`priority`, `status` et `createdAt`.
+
+### Erreurs
+
+| Code | Signification |
+|------|---------------|
+| `404` | Aucun ticket ne porte cet identifiant |
+
+La réponse `404` est au format JSON et a la forme suivante : `error` est un texte, et non
+l'objet `errors` utilisé pour les erreurs de champ.
+
+```json
+{ "error": "Ticket not found" }
+```
 
 ## Changer le statut
 
