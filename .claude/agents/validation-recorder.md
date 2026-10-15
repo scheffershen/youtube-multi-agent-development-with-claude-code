@@ -32,7 +32,8 @@ actually read the code for that line of the table.
 Before writing, replay:
 
 1. `tools/php vendor/bin/phpunit` on the release commit. Keep the full summary line and
-   the list of failing tests, if any.
+   the list of failing tests, if any; when a recorded red baseline exists
+   (`reports/baseline-round-N.md`), say which failures are in it and which are not.
 2. The replay named in the Toolchain table of `CLAUDE.md`: with a simulator,
    `DATABASE_URL="sqlite:///%kernel.project_dir%/var/data_validate_<version>.db" tools/php bin/console app:simulate-traffic --reset`
    (PowerShell: set `$env:DATABASE_URL` first), so the shared dev database is never

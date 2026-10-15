@@ -18,7 +18,8 @@
       "Bash(cat:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
-      "Bash(bash .claude/scripts/smoke.sh:*)"
+      "Bash(bash .claude/scripts/smoke.sh:*)",
+      "Bash(python -I .claude/scripts/record_baseline.py:*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",
@@ -26,7 +27,9 @@
       "Bash(git tag:*)",
       "Bash(git merge:*)",
       "Bash(git reset --hard:*)",
-      "Bash(gh pr merge:*)"
+      "Bash(gh pr merge:*)",
+      "Bash(git add -A:*)",
+      "Bash(git add --all:*)"
     ]
   },
   "hooks": {

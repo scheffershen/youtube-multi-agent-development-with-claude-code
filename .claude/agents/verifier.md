@@ -12,7 +12,11 @@ spec and the repository state, so that you judge the code rather than the story 
 ## Checks, in order
 
 1. **Suite**: `tools/php vendor/bin/phpunit`. Every test must pass, including the
-   baseline ones. Capture the summary line.
+   baseline ones, **except** the tests listed in a recorded red baseline you were given
+   (`reports/baseline-round-N.md`): those may still fail, unless the spec's scope covers
+   them, in which case they must now pass. Any failing test not in that list is a failure
+   of the item. Capture the summary line and the diff between the failing list and the
+   recorded one (now passing, new cause); that diff is reported, not judged.
 2. **Criteria coverage**: for each acceptance criterion in the spec, find the test method
    that covers it (`tests/Api/*Test.php`). A criterion with no test is a failure, even if
    the code looks right.
@@ -27,8 +31,12 @@ spec and the repository state, so that you judge the code rather than the story 
    exit code 2 means the server was down: not a verdict, say so in `notes`, the item
    cannot PASS until the replay has run. Either way, only the lines appended during the
    replay count (older lines predate the fix). Any CRITICAL whose file:line falls inside
-   the spec's scope is a failure. CRITICALs outside scope are reported as "remaining"
-   for the next round, not as failures.
+   the spec's scope is a failure. CRITICALs outside scope, and `KO` probes explained by
+   such a CRITICAL, are reported as "remaining" for the next round, not as failures. A
+   `KO` probe that no change inside the spec's scope could fix (a probe path that does
+   not exist in this application, for example without its locale prefix, or a server
+   configuration matter) is a decision to hand back, not a failure: say what the probe
+   should have been.
 4. **Diff review**: `git diff --stat` and `git diff` for `src/` and `tests/`. Flag:
    changes outside the spec's scope, deleted or weakened existing tests, `json_decode` by
    hand where `#[MapRequestPayload]` was the obvious tool, missing Validator constraints,
