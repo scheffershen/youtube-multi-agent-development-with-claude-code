@@ -61,7 +61,34 @@ champ valide n'apparaît pas dans `errors`.
 
 `GET /api/tickets`
 
-Renvoie `{ "items": [...], "count": n }`, du plus récent au plus ancien.
+Renvoie `{ "items": [...], "count": n }`, du plus récent au plus ancien. Sans paramètre,
+tous les tickets sont renvoyés.
+
+### Filtrer par statut
+
+| Paramètre | Type | Obligatoire | Description |
+|-----------|------|-------------|-------------|
+| `status` | `open`, `in_progress`, `closed` | Non | Ne renvoie que les tickets dont le statut est exactement celui indiqué |
+
+Exemple : `GET /api/tickets?status=open`. La réponse est `200` au format
+`{ "items": [...], "count": n }` ; `count` est égal au nombre de tickets renvoyés, toujours
+du plus récent au plus ancien. Lorsqu'aucun ticket n'a le statut demandé, la réponse est
+`200` avec `{ "items": [], "count": 0 }` : ce n'est pas une erreur.
+
+#### Erreurs
+
+| Code | Signification |
+|------|---------------|
+| `400` | La valeur de `status` n'est pas l'une des trois valeurs acceptées ; la liste n'est pas renvoyée |
+
+La comparaison est exacte et sensible à la casse : `OPEN` est refusé. Un paramètre vide
+(`?status=`) est également refusé. La réponse `400` a la forme suivante : `errors` associe
+la clé `status` à un message qui indique les valeurs acceptées (`open`, `in_progress`,
+`closed`).
+
+```json
+{ "errors": { "status": "<message>" } }
+```
 
 Les tickets existants dont la priorité n'est pas l'une des quatre valeurs acceptées ne
 sont ni modifiés ni supprimés : ils restent renvoyés tels quels, ici comme à la
