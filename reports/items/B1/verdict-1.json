@@ -1,0 +1,11 @@
+{
+  "spec": "specs/B1-stats-zero-tickets.md",
+  "verdict": "PASS",
+  "suite": "OK (6 tests, 26 assertions)",
+  "failures": [],
+  "remaining_criticals_out_of_scope": [
+    "TicketController.php:40 ErrorException: Undefined array key \"priority\" (POST /api/tickets without priority -> 500)",
+    "TicketController.php:54 Error: Call to a member function toArray() on null (GET /api/tickets/9999 -> 500 instead of 404)"
+  ],
+  "notes": "Criteria coverage, all in D:/Sandbox/yt-30-10-2026/ticketflow/tests/Api/B1StatsZeroTicketsTest.php: AC1 is covered by testAc1EmptySchemaReturns200WithZeroCounts. AC2 is covered by testAc2EmptySchemaClosedRatioIsNumericZero (assertEquals(0) plus a numeric/int-or-float type check). AC3 is covered by testAc3OneOfTwoClosedGivesFiftyPercent (2 POSTs, a PATCH to closed, then total 2, closed 1, open 1, ratio 50). AC4 is covered because testStatsWithTickets in D:/Sandbox/yt-30-10-2026/ticketflow/tests/Api/TicketApiTest.php:60 is unmodified (git diff shows no change under tests/) and passes. Diff: the only change is D:/Sandbox/yt-30-10-2026/ticketflow/src/Service/TicketStats.php:29-30, a `0 === $total ? 0.0 : round(...)` guard in the service, as the spec hints. It stays in scope: no change to keys, rounding or route, no new dependency, no migration, nothing swallowed, no hard-coded paths. Traffic replay used the isolated DB var/data_verify_B1.db, which has been deleted. dev.log went from 73 to 127 lines. The first GET /api/stats ran on the freshly reset empty table and logged no DivisionByZeroError. Both stats calls returned 200. The two new CRITICALs are both in TicketController and outside this spec's scope. Style: the new test parses the response body with json_decode, which is fine for test code."
+}
