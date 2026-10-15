@@ -84,4 +84,12 @@ arrives. A spec must never contain "we assume".
   picks the contract, the developer makes the framework match it.
 - Preserve existing behaviour unless the item says otherwise, and say so explicitly in
   "Out of scope".
-- Return the path of the spec file you wrote, and nothing else.
+- Return only the Report block below.
+
+## Report (return this, nothing else)
+
+```
+SPEC: <path of the spec file you wrote>
+CRITERIA: <number of acceptance criteria>
+DECISIONS: <D1=A, ... or "none">
+```
