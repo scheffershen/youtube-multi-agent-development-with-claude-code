@@ -12,4 +12,6 @@
 **Recommendation:** A - follows AGENTS.md, sets F1 up cleanly, and the dependency is small and Flex-managed.
 **Work so far:** D1=A and D2=B are final. Existing behaviour is preserved (201 happy path, PATCH status 422 shape, allowed priorities low/normal/high; F1 owns new values). The spec is drafted apart from the Hints section and the dependency scope lines.
 **Orchestrator note (corrected 2026-10-15):** the first version of this note said both packages were already in composer.lock as transitive dependencies. That was wrong: composer.lock only names them in other packages' constraints, with no package entry; the vendor/ folders are untracked leftovers. Option A therefore adds two new package entries to composer.lock as well as composer.json. Re-confirmed A by Shen on 2026-10-15 (chat) after the correction.
-**Decision:** A by Shen on 2026-10-15 (chat) - require both as direct dependencies (already transitive), readonly DTO + #[MapRequestPayload], errors mapped to errors.<field>
+**Decision:** A by Shen on 2026-10-15 (chat) - require both as direct dependencies, readonly DTO + #[MapRequestPayload], errors mapped to errors.<field>
+
+_Correction 2026-10-15 (orchestrator): the Decision note first said "(already transitive)"; that was wrong (see the corrected note above) and was removed. The decision itself, A, is unchanged. Recorded as anomaly A7 in the 0.2.0 dossier._
