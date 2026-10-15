@@ -8,9 +8,11 @@ Nothing below is run by the loop.
 
 `ticketflow` is public at
 `https://github.com/scheffershen/youtube-multi-agent-development-with-claude-code`
-(created empty on GitHub and added as `origin` locally on 2026-10-15, so step 1 is only
-needed for the tutorial repository); `ticketflow-tutorial` is private. Replace `<owner>`
-with your GitHub user or organisation where it still appears.
+(created empty on GitHub and added as `origin` locally on 2026-10-15);
+`ticketflow-tutorial` is private at
+`https://github.com/scheffershen/yt-18-10-2026-multi-agent-with-claude-code`
+(also created empty and wired as `origin` the same day). Both repositories exist, so
+step 1 is already done; go to step 2.
 
 ```bash
 cd D:\Sandbox\yt-30-10-2026\ticketflow-tutorial
