@@ -10,4 +10,4 @@
 
 **Recommendation:** A - the spec-writer's proposal; it matches "unknown status returns 400, not a list".
 **Work so far:** Same as D1.
-**Decision:**
+**Decision:** A by Shen on 2026-10-15 (chat) - empty status= is unknown: 400 with the D1 shape

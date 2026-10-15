@@ -11,4 +11,4 @@
 
 **Recommendation:** C - keeps the `errors` shape of the newest endpoint, fits #[MapQueryString] and the Validator, and keeps the allowed values visible.
 **Work so far:** Read TicketController.php (PATCH status validation at lines 60-77: 422, `error` + `allowed`). property-access/info already present, so no new dependency. Valid whatever the answer: known status filters (200, existing shape); absent status unchanged; unknown status 400; case-sensitive match on Ticket::STATUSES; out of scope: PATCH, POST (B2 stays 422), priority filter, pagination; existing tests unchanged.
-**Decision:**
+**Decision:** C by Shen on 2026-10-15 (chat) - 400 with errors.status, message names the allowed values
