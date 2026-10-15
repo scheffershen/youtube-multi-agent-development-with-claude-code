@@ -30,7 +30,28 @@ Corps attendu :
 { "title": "Page de connexion vide", "description": "Depuis la mise à jour, Safari n'affiche rien.", "priority": "high" }
 ```
 
-Réponse `201` avec le ticket créé.
+Les champs `title`, `description` et `priority` sont obligatoires. Un champ est considéré
+comme manquant lorsqu'il est absent, `null` ou une chaîne vide.
+
+Réponse `201` avec le ticket créé : `id`, `title`, `description`, `priority`, `status`
+(`open`) et `createdAt`.
+
+### Erreurs
+
+| Code | Signification |
+|------|---------------|
+| `422` | Un ou plusieurs champs obligatoires sont manquants ; aucun ticket n'est créé |
+
+La réponse `422` a la forme suivante : `errors` est un objet qui associe le nom de
+chaque champ en erreur à un message.
+
+```json
+{ "errors": { "priority": "<message>" } }
+```
+
+Tous les champs en erreur sont signalés dans la même réponse. Avec un corps `{}` ou un
+corps vide, `errors` contient les trois clés `title`, `description` et `priority`. Un
+champ valide n'apparaît pas dans `errors`.
 
 ## Lister les tickets
 

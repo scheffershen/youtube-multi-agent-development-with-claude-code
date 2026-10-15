@@ -1,0 +1,4 @@
+ITEM: B2
+PAGES: D:\Sandbox\yt-30-10-2026\ticketflow\docs\user\tickets.md (updated, section "Créer un ticket" plus a new "Erreurs" subsection)
+DOCUMENTED: Required behaviour 1, 2, 3, 6, 7 and the "no ticket created" part of 4. AC1-AC7 (422 and error keys), AC8 (nothing persisted, stated as "aucun ticket n'est créé"), AC9 (201 and response keys). AC10 is a test regression and AC11 is unchanged PATCH behaviour, so neither needed new text. The existing PATCH section is untouched.
+NOT DOCUMENTED: Required behaviour 4, "no 'Ticket created' log line". It is an internal log detail, not user-visible, and the verifier notes it has no direct test. Required behaviour 5 is covered implicitly by the 422 description. Unknown priority values and malformed JSON are not mentioned because the spec puts them out of scope (F1).
