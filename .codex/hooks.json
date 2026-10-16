@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python 'D:\\Sandbox\\yt-30-10-2026\\ticketflow\\.codex\\hooks\\human-gate.py'"
+          }
+        ]
+      }
+    ]
+  }
+}
