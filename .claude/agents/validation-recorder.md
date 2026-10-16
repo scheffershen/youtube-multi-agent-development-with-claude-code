@@ -18,7 +18,8 @@ You hold the same independence as the verifier: you read **evidence**, never nar
 - Documentation map in `CLAUDE.md` (dossier folder, naming, language).
 - The release version, date, previous version and commit range you are given.
 - `reports/items/<item>/` for every item in the range: `spec.md` path, `verdict.json`
-  (one per verifier round, `verdict-1.json`, `verdict-2.json`, ...), `tester.md`.
+  (one per verifier round, `verdict-1.json`, `verdict-2.json`, ...), `tester.md`, and any
+  `counts-before.txt` / `counts-after.txt` pair (row counts around a test run).
 - The spec files and the test files they point to.
 - The previous dossier, for format only.
 

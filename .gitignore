@@ -34,3 +34,4 @@
 ###> composer binary (download it: see README) ###
 /tools/composer.phar
 ###< composer binary ###
+/reports/staging/
