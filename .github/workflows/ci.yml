@@ -52,7 +52,9 @@ jobs:
       - name: record_baseline.py parses PHPUnit output
         run: python -I .claude/scripts/record_baseline.py --selftest
       - name: count-rows.php counts the test database
-        run: php .claude/scripts/count-rows.php 'App\Entity\Ticket' 'App\Entity\Agent' | tee counts.txt && grep -q '^database: ' counts.txt
+        run: |
+          php .claude/scripts/count-rows.php 'App\Entity\Ticket' 'App\Entity\Agent' | tee counts.txt
+          grep -q '^database' counts.txt
 
   container:
     name: image builds and suite passes inside it
