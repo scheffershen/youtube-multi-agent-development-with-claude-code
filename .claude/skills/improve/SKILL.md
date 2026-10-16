@@ -110,8 +110,11 @@ In the **same message**, spawn:
 Use `run_in_background: true` for both, then wait for both notifications. Record the two
 agent IDs: you will message them in later rounds instead of spawning fresh ones.
 
-When each reports, save the block verbatim to `reports/items/<item id>/developer.md` and
-`reports/items/<item id>/tester.md`. This folder is the **evidence store**: the
+When each reports, save the block verbatim to `reports/staging/<item id>/developer.md`
+and `reports/staging/<item id>/tester.md`, **not** yet to the item folder: the verifier
+reads `reports/items/<item id>/` (item.json, decisions.md) and must never find the
+developer's or tester's story there. Move both files into `reports/items/<item id>/`
+right after the verdict is saved (step 2c). That folder is the **evidence store**: the
 documentation agents in step 2f read from it and never from your memory.
 
 Ownership of `tests/` is split, and you must say so in both prompts: the developer owns
@@ -128,7 +131,11 @@ and do not start the next item's developer or tester until the verdict is in. Th
 verifier uses its own SQLite file for the traffic replay (see its role); the log file is
 shared, which is why it only reads the lines appended during its own run.
 Parse the verdict JSON and save it verbatim to `reports/items/<item id>/verdict-<n>.json`
-where `<n>` is the verifier round (1 for the first). Also write
+where `<n>` is the verifier round (1 for the first). It must parse: check it with
+`python -I -c "import json,sys; json.load(open(sys.argv[1], encoding='utf-8'))" <file>`;
+if it does not (a Windows path with unescaped backslashes is the usual cause), send it
+back to the verifier to rewrite with forward slashes. Then move the staged developer and
+tester reports into the item folder (step 2b). Also write
 `reports/items/<item id>/item.json` with the backlog item once, on the first round.
 
 ### 2d. Fix loop

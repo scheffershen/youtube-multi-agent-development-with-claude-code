@@ -19,7 +19,9 @@
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(bash .claude/scripts/smoke.sh:*)",
-      "Bash(python -I .claude/scripts/record_baseline.py:*)"
+      "Bash(python -I .claude/scripts/record_baseline.py:*)",
+      "Bash(tools/php .claude/scripts/count-rows.php:*)",
+      "Bash(php .claude/scripts/count-rows.php:*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",

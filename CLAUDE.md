@@ -45,6 +45,8 @@ schema in PHP). Avoid `doctrine:schema:drop --force`: the permission classifier 
 - `docs/user/` end-user documentation (Docusaurus layout mirroring medica-source).
 - `release/unreleased/` changelog fragments awaiting a release.
 - `reports/items/<id>/` the evidence store: every agent's structured output per item.
+  `reports/staging/<id>/` holds the developer's and tester's reports until the verdict is
+  in, so the verifier never sees them.
   `.claude/workflows/improve.js` the same loop as a deterministic Workflow script.
 
 ## Log sources (for the log-analyst)
